@@ -52,8 +52,8 @@ def abrir_cancela():
     mostrar_teatro()
     global fila
     global assento
-    fila = ctk.CTkEntry(app, placeholder_text="Digite sua Fila")
-    assento = ctk.CTkEntry(app, placeholder_text="Digite seu assento")
+    fila = ctk.CTkEntry(app, placeholder_text="Digite sua Fila(0-9)")
+    assento = ctk.CTkEntry(app, placeholder_text="Digite seu assento(0-9)")
     fila.pack(pady=10)
     assento.pack(pady=10)
     fila.bind("<Return>", cancelar_reserva)
@@ -64,10 +64,10 @@ def salvar_teatro(event):
     fila_num = int(fila.get())
     assento_num = int(assento.get())
     if teatro[fila_num][assento_num] == 1:
-        mostrar_notificacao(f"Lugar na fila {fila_num} e no assento {assento_num} já está reservado, escolha outro lugar", "red")
+        mostrar_notificacao(f"Lugar na fila {fila_num} e no assento {assento_num} já está reservado, escolha outro lugar!", "red")
     else: 
         teatro[fila_num][assento_num] = 1
-        mostrar_notificacao(f"Lugar na fila {fila_num} e no assento {assento_num} reservado", "green")
+        mostrar_notificacao(f"Lugar na fila {fila_num} e no assento {assento_num} reservado.", "green")
         mostrar_teatro()
         fila.destroy()
         assento.destroy()
@@ -76,10 +76,10 @@ def cancelar_reserva(event):
     fila_num = int(fila.get())
     assento_num = int(assento.get())
     if teatro[fila_num][assento_num] == 0:
-        mostrar_notificacao(f"Lugar na fila {fila_num} e no assento {assento_num} nãoi estava reservado!", "red")
+        mostrar_notificacao(f"Lugar na fila {fila_num} e no assento {assento_num} não estava reservado!", "red")
     else: 
         teatro[fila_num][assento_num] = 0
-        mostrar_notificacao(f"Lugar na fila {fila_num} e no assento {assento_num} cancelado", "green")
+        mostrar_notificacao(f"Lugar na fila {fila_num} e no assento {assento_num} cancelado.", "green")
         mostrar_teatro()
         fila.destroy()
         assento.destroy()
@@ -100,6 +100,9 @@ button2.pack(pady=10)
 
 button3 = ctk.CTkButton(app, text="Cancelar", command=abrir_cancela)
 button3.pack(pady=10)
+
+button4 = ctk.CTkButton(app, text="Sair", fg_color="red", command=app.destroy)
+button4.pack(pady=10)
 
 caixa_texto = ctk.CTkTextbox(
     app, width=500, height=260, font=("Courier New", 14)
