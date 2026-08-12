@@ -105,7 +105,7 @@ button4 = ctk.CTkButton(app, text="Sair", fg_color="red", command=app.destroy)
 button4.pack(pady=10)
 
 caixa_texto = ctk.CTkTextbox(
-    app, width=500, height=260, font=("Courier New", 14)
+    app, width=250, height=260, font=("Courier New", 14)
 )
 caixa_texto.pack(pady=10)
 
