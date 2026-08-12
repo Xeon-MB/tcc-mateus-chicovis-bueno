@@ -14,7 +14,6 @@ fila9 = [0,0,0,0,0,0,0,0,0,0]
 
 teatro = [fila0, fila1, fila2, fila3, fila4, fila5, fila6, fila7, fila8, fila9]
 
-
 def mostrar_teatro():
         texto_mapa = "         -------------------\n"
         texto_mapa += "                PALCO       \n\n"
@@ -23,9 +22,9 @@ def mostrar_teatro():
             texto_mapa += f"FILA {x} - {assentos_str}\n"
         caixa_texto.delete("1.0", "end")
         caixa_texto.insert("1.0", texto_mapa)
-def mostrar_notificacao(texto, duracao=2000):
-    aviso = ctk.CTkLabel(app, text=texto, fg_color="green", corner_radius=8)
-    aviso.place(relx=0.5, rely=0.05, anchor="n")  # aparece no topo, centralizado
+def mostrar_notificacao(texto,cor, duracao=2000):
+    aviso = ctk.CTkLabel(app, text=texto, fg_color=cor, corner_radius=8)
+    aviso.place(relx=0.5, rely=0.05, anchor="n")  
 
     app.after(duracao, aviso.destroy)
 
@@ -64,24 +63,30 @@ def abrir_cancela():
 def salvar_teatro(event):
     fila_num = int(fila.get())
     assento_num = int(assento.get())
-    teatro[fila_num][assento_num] = 1
-    mostrar_notificacao(f"Lugar na fila {fila_num} e no assento {assento_num} reservado")
-    mostrar_teatro()
-    fila.destroy()
-    assento.destroy()
+    if teatro[fila_num][assento_num] == 1:
+        mostrar_notificacao(f"Lugar na fila {fila_num} e no assento {assento_num} já está reservado, escolha outro lugar", "red")
+    else: 
+        teatro[fila_num][assento_num] = 1
+        mostrar_notificacao(f"Lugar na fila {fila_num} e no assento {assento_num} reservado", "green")
+        mostrar_teatro()
+        fila.destroy()
+        assento.destroy()
 
 def cancelar_reserva(event):
     fila_num = int(fila.get())
     assento_num = int(assento.get())
-    teatro[fila_num][assento_num] = 0
-    mostrar_notificacao(f"Lugar na fila {fila_num} e no assento {assento_num} cancelado")
-    mostrar_teatro()
-    fila.destroy()
-    assento.destroy()
+    if teatro[fila_num][assento_num] == 0:
+        mostrar_notificacao(f"Lugar na fila {fila_num} e no assento {assento_num} nãoi estava reservado!", "red")
+    else: 
+        teatro[fila_num][assento_num] = 0
+        mostrar_notificacao(f"Lugar na fila {fila_num} e no assento {assento_num} cancelado", "green")
+        mostrar_teatro()
+        fila.destroy()
+        assento.destroy()
     
 app = ctk.CTk()
 app.title("Gerenciador de teatro")
-app.geometry("300x200")
+app.geometry("500x300")
 
 
 label = ctk.CTkLabel(app, text="Gerenciador de Teatro", text_color="white")
