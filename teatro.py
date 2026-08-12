@@ -29,7 +29,15 @@ def mostrar_notificacao(texto, duracao=2000):
 
     app.after(duracao, aviso.destroy)
 
+def fechar_caixas():
+    if "fila" in globals() and fila.winfo_exists():
+        fila.destroy()
+    if "assento" in globals() and assento.winfo_exists():
+        assento.destroy()
+
+
 def abrir_reserva():
+    fechar_caixas()
     mostrar_teatro()
     global fila
     global assento
@@ -41,6 +49,7 @@ def abrir_reserva():
     assento.bind("<Return>", salvar_teatro)
 
 def abrir_cancela():
+    fechar_caixas()
     mostrar_teatro()
     global fila
     global assento
