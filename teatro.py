@@ -28,29 +28,64 @@ def mostrar_notificacao(texto, duracao=2000):
     aviso.place(relx=0.5, rely=0.05, anchor="n")  # aparece no topo, centralizado
 
     app.after(duracao, aviso.destroy)
-def reserva():
+
+def abrir_reserva():
     mostrar_teatro()
+    global fila
+    global assento
     fila = ctk.CTkEntry(app, placeholder_text="Digite sua Fila")
     assento = ctk.CTkEntry(app, placeholder_text="Digite seu assento")
     fila.pack(pady=10)
     assento.pack(pady=10)
-    fila = fila.get()
-    assento = assento.get()
-    teatro[fila][assento] = 1
-    mostrar_notificacao(f"Lugar na fila {fila} e no assento {assento} reservado!")
+    fila.bind("<Return>", salvar_teatro)
+    assento.bind("<Return>", salvar_teatro)
+
+def abrir_cancela():
+    mostrar_teatro()
+    global fila
+    global assento
+    fila = ctk.CTkEntry(app, placeholder_text="Digite sua Fila")
+    assento = ctk.CTkEntry(app, placeholder_text="Digite seu assento")
+    fila.pack(pady=10)
+    assento.pack(pady=10)
+    fila.bind("<Return>", cancelar_reserva)
+    assento.bind("<Return>", cancelar_reserva)
+
+
+def salvar_teatro(event):
+    fila_num = int(fila.get())
+    assento_num = int(assento.get())
+    teatro[fila_num][assento_num] = 1
+    mostrar_notificacao(f"Lugar na fila {fila_num} e no assento {assento_num} reservado")
+    mostrar_teatro()
+    fila.destroy()
+    assento.destroy()
+
+def cancelar_reserva(event):
+    fila_num = int(fila.get())
+    assento_num = int(assento.get())
+    teatro[fila_num][assento_num] = 0
+    mostrar_notificacao(f"Lugar na fila {fila_num} e no assento {assento_num} cancelado")
+    mostrar_teatro()
+    fila.destroy()
+    assento.destroy()
+    
 app = ctk.CTk()
 app.title("Gerenciador de teatro")
 app.geometry("300x200")
 
 
-label = ctk.CTkLabel(app, text="Gerenciador de Teatro", text_color="black")
+label = ctk.CTkLabel(app, text="Gerenciador de Teatro", text_color="white")
 label.pack(pady=10)
 
 button1 = ctk.CTkButton(app, text="Mostrar Teatro", command=mostrar_teatro)
 button1.pack(pady=10)
 
-button2 = ctk.CTkButton(app, text="Reservar", command=reserva)
+button2 = ctk.CTkButton(app, text="Reservar", command=abrir_reserva)
 button2.pack(pady=10)
+
+button3 = ctk.CTkButton(app, text="Cancelar", command=abrir_cancela)
+button3.pack(pady=10)
 
 caixa_texto = ctk.CTkTextbox(
     app, width=500, height=260, font=("Courier New", 14)
