@@ -1,5 +1,6 @@
 import customtkinter as ctk
 from PIL import Image
+from datetime import date, timedelta
 
 fila0 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 fila1 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
@@ -133,6 +134,20 @@ def mostrar_filmes():
     duracao_filme3.grid(row=2, column = 2, padx=10)
     sala_filme3 = ctk.CTkLabel(menu, text="SALA: 3", font=("Arial", 15))
     sala_filme3.grid(row=3, column = 2, padx=10)
+    
+def calendario():
+    global menu
+    tirar_menu()
+    calendar = ctk.CTkFrame(app)
+    calendar.pack()
+    label = ctk.CTkLabel(calendar, text="Semana Atual")
+    label.grid(row = 0, column = 3)
+    for i in range(7):
+        button = ctk.CTkButton(calendar, text=f"Dia: {i+1}", width=20, height=10)
+        button.grid(row = 1, column = i, padx=10)
+        
+        
+    
         
 
 app = ctk.CTk()
@@ -154,7 +169,11 @@ botao_filmes.pack()
 botao_salas = ctk.CTkButton(barra_lateral, text="Ver Salas", fg_color="transparent", font=("Arial", 15), command=menu_salas)
 botao_salas.pack()
 
+<<<<<<< HEAD
 calendario = ctk.CTkButton(barra_lateral, text="Calendário", fg_color="transparent", font=("Arial", 15))
+=======
+calendario = ctk.CTkButton(barra_lateral, text="Calendário", fg_color="transparent", font=("Arial", 15), command= calendario)
+>>>>>>> 0f23edc (calendario criado)
 calendario.pack()
 
 botao_sair = ctk.CTkButton(barra_lateral, text="Sair", fg_color="transparent", font=("Arial", 15), command = fechar)
