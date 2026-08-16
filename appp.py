@@ -154,7 +154,7 @@ botao_filmes.pack()
 botao_salas = ctk.CTkButton(barra_lateral, text="Ver Salas", fg_color="transparent", font=("Arial", 15), command=menu_salas)
 botao_salas.pack()
 
-calendario = ctk.CTkButton(barra_lateral, text="Sala", fg_color="transparent", font=("Arial", 15))
+calendario = ctk.CTkButton(barra_lateral, text="Calendário", fg_color="transparent", font=("Arial", 15))
 calendario.pack()
 
 botao_sair = ctk.CTkButton(barra_lateral, text="Sair", fg_color="transparent", font=("Arial", 15), command = fechar)
