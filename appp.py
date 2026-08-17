@@ -1,28 +1,39 @@
 import customtkinter as ctk
 from PIL import Image
-from datetime import date, timedelta
 
-fila0 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-fila1 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-fila2 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-fila3 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-fila4 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-fila5 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-fila6 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-fila7 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-fila8 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-fila9 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+fila01 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+fila11 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+fila21 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+fila31 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+fila41 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+fila51 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+fila61 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+fila71 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+fila81 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+fila91 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 
-sala1 = [fila0, fila1, fila2, fila3, fila4, fila5, fila6, fila7, fila8, fila9]
+fila02 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+fila12 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+fila22 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+fila32 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+fila42 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+fila52 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+fila62= [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+fila72 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+fila82 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+fila92 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+
+sala1 = [fila01, fila11, fila21, fila31, fila41, fila51, fila61, fila71, fila81, fila91]
+sala2 = [fila02, fila12, fila22, fila32, fila42, fila52, fila62, fila72, fila82, fila92]
 
 
 def tirar_menu():
     if "menu" in globals() and menu.winfo_exists():
         menu.destroy()
 
-def mostrar_sala():
-    assentos = ctk.CTkFrame(menu, fg_color="transparent")
-    assentos.pack()
+def mostrar_sala1():
+    assentos1 = ctk.CTkFrame(menu, fg_color="transparent")
+    assentos1.grid(row = 1, column = 0, padx = 10)
 
     for fila in range(10):
         for lugar in range(20):
@@ -34,7 +45,23 @@ def mostrar_sala():
             else:
                 cor = "yellow"
 
-            botao = ctk.CTkButton(assentos,text=str(lugar + 1),width=20,height=10,fg_color=cor)
+            botao = ctk.CTkButton(assentos1,text=str(lugar + 1),width=20,height=10,fg_color=cor)
+            botao.grid(row=fila,column=lugar,padx=5,pady=5)
+def mostrar_sala2():
+    assentos2 = ctk.CTkFrame(menu, fg_color="transparent")
+    assentos2.grid(row = 1, column = 1, padx = 10)
+
+    for fila in range(10):
+        for lugar in range(20):
+
+            if sala2[fila][lugar] == 0:
+                cor = "green"
+            elif sala2[fila][lugar] == 1:
+                cor = "red"
+            else:
+                cor = "yellow"
+
+            botao = ctk.CTkButton(assentos2,text=str(lugar + 1),width=20,height=10,fg_color=cor)
             botao.grid(row=fila,column=lugar,padx=5,pady=5)
     
 
@@ -45,16 +72,20 @@ def menu_salas():
     menu.pack(side="left", fill="y")
     
     titulo = ctk.CTkLabel(menu, text="sala 1")
-    titulo.pack()
+    titulo.grid(row = 0, column =0)
     
-    mostrar_sala()
+    mostrar_sala1()
     
-def fazer_reserva(fila, lugar, botao):
-    sala1[fila][lugar] = 1
+    titulo = ctk.CTkLabel(menu, text="sala 2")
+    titulo.grid(row = 0, column =1)
+    mostrar_sala2()
+    
+def fazer_reserva(sala,fila, lugar, botao):
+    sala[fila][lugar] = 1
     botao.configure(fg_color="red")
     
 
-def reserva():
+def reserva(sala):
     reserva= ctk.CTkToplevel(app)
     reserva.title("Reservar Sala")
     reserva.geometry("500x400")
@@ -62,21 +93,21 @@ def reserva():
     assentos = ctk.CTkFrame(reserva, fg_color="transparent")
     assentos.pack()
     
-    titulo= ctk.CTkLabel(assentos, text="Sala 1")
+    titulo= ctk.CTkLabel(assentos, text=f"Sala")
     titulo.grid(row = 0, column = 11)
 
     for fila in range(10):
         for lugar in range(20):
 
-            if sala1[fila][lugar] == 0:
+            if sala[fila][lugar] == 0:
                 cor = "green"
-            elif sala1[fila][lugar] == 1:
+            elif sala[fila][lugar] == 1:
                 cor = "red"
             else:
                 cor = "yellow"
 
             botao = ctk.CTkButton(assentos,text=str(lugar + 1),width=20,height=10,fg_color=cor)
-            botao.configure(command=lambda f=fila, l=lugar, b=botao: fazer_reserva(f, l, b))
+            botao.configure(command=lambda s = sala, f=fila, l=lugar, b=botao: fazer_reserva(s, f, l, b))
             botao.grid(row=(fila+1),column=(lugar+1),padx=5,pady=5)
     feito = ctk.CTkButton(reserva, text="Reserva Feita!", command = reserva.destroy)
     feito.pack()   
@@ -100,6 +131,7 @@ def fechar():
     
 def mostrar_filmes():
     global menu
+    global sala_filme
     tirar_menu()
     menu = ctk.CTkFrame(app, width=1900, fg_color="transparent")
     menu.pack(side="left", fill="y")
@@ -108,7 +140,8 @@ def mostrar_filmes():
     image2 = ctk.CTkImage(light_image=Image.open("homemaranha3.png"), dark_image=Image.open("homemaranha3.png"), size=(200,300))
     image3 = ctk.CTkImage(light_image=Image.open("barbie.png"), dark_image=Image.open("barbie.png"), size=(200,300))
     
-    filme1 = ctk.CTkButton(menu, text="",image = image1, width=200, height=300, fg_color="transparent", command=reserva)
+    sala_filme = sala1
+    filme1 = ctk.CTkButton(menu, text="",image = image1, width=200, height=300, fg_color="transparent", command=lambda s = sala_filme: reserva(s))
     filme1.grid(row=0, column = 0, padx=10)
     nome_filme1 = ctk.CTkLabel(menu, text="A Odisseia", font=("Arial", 15, "bold"))
     nome_filme1.grid(row=1, column = 0, padx=10)
@@ -117,7 +150,8 @@ def mostrar_filmes():
     sala_filme1 = ctk.CTkLabel(menu, text="SALA: 1", font=("Arial", 15))
     sala_filme1.grid(row=3, column = 0, padx=10)
     
-    filme2 = ctk.CTkButton(menu, text="",image = image2, width=200, height=300, fg_color="transparent")
+    sala_filme = sala2
+    filme2 = ctk.CTkButton(menu, text="",image = image2, width=200, height=300, fg_color="transparent", command=lambda s = sala_filme: reserva(s))
     filme2.grid(row=0, column = 1, padx=10)
     nome_filme2 = ctk.CTkLabel(menu, text="Homem Aranha 3", font=("Arial", 15, "bold"))
     nome_filme2.grid(row=1, column = 1, padx=10)
@@ -169,11 +203,7 @@ botao_filmes.pack()
 botao_salas = ctk.CTkButton(barra_lateral, text="Ver Salas", fg_color="transparent", font=("Arial", 15), command=menu_salas)
 botao_salas.pack()
 
-<<<<<<< HEAD
-calendario = ctk.CTkButton(barra_lateral, text="Calendário", fg_color="transparent", font=("Arial", 15))
-=======
 calendario = ctk.CTkButton(barra_lateral, text="Calendário", fg_color="transparent", font=("Arial", 15), command= calendario)
->>>>>>> 0f23edc (calendario criado)
 calendario.pack()
 
 botao_sair = ctk.CTkButton(barra_lateral, text="Sair", fg_color="transparent", font=("Arial", 15), command = fechar)
