@@ -1,0 +1,1090 @@
+# Guia de PostgreSQL — Gerenciador de Teatro
+
+## 1. O que a gente vai fazer?
+
+Atualmente o programa guarda praticamente tudo dentro do Python.
+
+Por exemplo:
+
+```python
+datas_filme1 = ["Segunda-Feira", "Quarta-Feira", "Sexta-Feira", "Domingo"]
+
+datas_filme2 = ["Terça-Feira", "Quinta-Feira", "Sabado"]
+
+historico = []
+
+valor_total = 0
+```
+
+E os assentos ficam em listas:
+
+```python
+fila01 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+```
+
+O problema é que **isso fica somente na memória do programa**.
+
+Se fechar o programa:
+
+```text
+Programa fechado
+      ↓
+Tudo que estava na memória pode ser perdido
+      ↓
+Reservas desaparecem
+```
+
+O PostgreSQL vai resolver isso.
+
+A ideia será:
+
+```text
+              PROGRAMA PYTHON
+                    │
+                    │
+                    ▼
+              POSTGRESQL
+                    │
+        ┌───────────┼───────────┐
+        ▼           ▼           ▼
+     Filmes      Sessões     Reservas
+                                │
+                                ▼
+                            Histórico
+```
+
+---
+
+# 2. O que é PostgreSQL?
+
+O PostgreSQL é um **sistema de gerenciamento de banco de dados**.
+
+Em vez de deixar informações importantes espalhadas em variáveis do Python, nós armazenamos essas informações em tabelas.
+
+Por exemplo:
+
+```text
+FILMES
+
+ID | Nome             | Duração
+---+------------------+--------
+1  | A Odisseia       | 2H52M
+2  | Homem Aranha 3   | 2H19M
+```
+
+Quando o programa precisar saber quais filmes existem, ele pergunta ao PostgreSQL.
+
+---
+
+# 3. O que fica no Python e o que fica no banco?
+
+Essa é provavelmente a parte mais importante.
+
+## Fica no PostgreSQL:
+
+* Filmes
+* Salas
+* Sessões
+* Dias de exibição
+* Assentos reservados
+* Reservas
+* Preços
+* Histórico
+* Data e hora das reservas
+
+## Continua no Python:
+
+* Botões
+* Frames
+* Janelas
+* Labels
+* Menus
+* Calendário visual
+* Cores dos assentos
+* Funções da interface
+* Variáveis temporárias
+
+### Exemplo
+
+O botão:
+
+```python
+botao = ctk.CTkButton(...)
+```
+
+**não vai para o banco.**
+
+Mas a informação:
+
+```text
+Sala 1
+Fila 3
+Lugar 8
+Reservado
+```
+
+**vai para o banco.**
+
+O Python consulta o banco e decide:
+
+```text
+Banco disse: ocupado
+        ↓
+Python:
+botão.configure(fg_color="red")
+```
+
+---
+
+# 4. Regra para saber se algo deve ir para o banco
+
+Use esta regra:
+
+> **Se eu fechar o programa e essa informação ainda precisar existir amanhã, ela provavelmente deve estar no banco.**
+
+Por exemplo:
+
+### Filme
+
+```text
+A Odisseia
+```
+
+Precisa continuar existindo?
+
+**Sim → Banco.**
+
+### Reserva
+
+```text
+Sala 1
+Fila 4
+Lugar 8
+```
+
+Precisa continuar existindo?
+
+**Sim → Banco.**
+
+### Botão
+
+```python
+botao
+```
+
+Precisa continuar existindo depois que fechar o programa?
+
+**Não → Python.**
+
+---
+
+# 5. PostgreSQL no projeto monolítico
+
+O trabalho precisa ser **um único arquivo Python**.
+
+Sem problema.
+
+Pode ficar assim:
+
+```text
+Gerenciador de Teatro/
+│
+├── main.py
+├── odisseia.png
+└── homemaranha3.png
+```
+
+O PostgreSQL fica separado porque ele é um serviço de banco de dados, mas o código Python continua todo dentro de:
+
+```text
+main.py
+```
+
+Então:
+
+```text
+main.py
+ ├── Interface
+ ├── Funções
+ ├── Calendário
+ ├── Reservas
+ ├── Cancelamentos
+ ├── Histórico
+ └── Código de conexão com PostgreSQL
+```
+
+---
+
+# 6. Instalar o PostgreSQL
+
+Primeiro, instalar o PostgreSQL no computador.
+
+Durante a instalação, será definido algo parecido com:
+
+```text
+Usuário: postgres
+Senha: ********
+Porta: 5432
+```
+
+A porta padrão normalmente será:
+
+```text
+5432
+```
+
+Depois deve ser criado um banco chamado:
+
+```text
+gerenciador_teatro
+```
+
+---
+
+# 7. Instalar o PostgreSQL no Python
+
+O Python precisa de um pacote para conseguir conversar com o PostgreSQL.
+
+No terminal:
+
+```bash
+pip install psycopg2-binary
+```
+
+Depois podemos usar:
+
+```python
+import psycopg2
+```
+
+---
+
+# 8. Fazer a conexão
+
+No começo do `main.py`:
+
+```python
+import customtkinter as ctk
+from PIL import Image
+import psycopg2
+```
+
+Depois:
+
+```python
+conexao = psycopg2.connect(
+    host="localhost",
+    database="gerenciador_teatro",
+    user="postgres",
+    password="SUA_SENHA",
+    port="5432"
+)
+
+cursor = conexao.cursor()
+```
+
+Trocar:
+
+```text
+SUA_SENHA
+```
+
+pela senha definida no PostgreSQL.
+
+---
+
+# 9. O que é `conexao`?
+
+Essa variável:
+
+```python
+conexao
+```
+
+representa a conexão entre o Python e o PostgreSQL.
+
+É como se fosse o **telefone entre os dois**.
+
+```text
+Python
+  │
+  │ conexão
+  ▼
+PostgreSQL
+```
+
+---
+
+# 10. O que é `cursor`?
+
+O:
+
+```python
+cursor
+```
+
+é utilizado para mandar comandos SQL para o banco.
+
+Por exemplo:
+
+```python
+cursor.execute("SELECT * FROM filmes")
+```
+
+É basicamente:
+
+> "PostgreSQL, me dê os filmes."
+
+---
+
+# 11. Criando a tabela de filmes
+
+Podemos criar:
+
+```sql
+CREATE TABLE filmes (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    duracao VARCHAR(20) NOT NULL,
+    imagem VARCHAR(200) NOT NULL,
+    sala INTEGER NOT NULL
+);
+```
+
+Essa tabela terá:
+
+```text
+filmes
+│
+├── id
+├── nome
+├── duracao
+├── imagem
+└── sala
+```
+
+---
+
+# 12. Inserindo os filmes
+
+Podemos colocar:
+
+```sql
+INSERT INTO filmes (nome, duracao, imagem, sala)
+VALUES
+('A Odisseia', '2H52M', 'odisseia.png', 1),
+('Homem Aranha 3', '2H19M', 'homemaranha3.png', 2);
+```
+
+Agora o banco terá:
+
+```text
+ID | NOME              | DURAÇÃO | IMAGEM             | SALA
+---+-------------------+---------+--------------------+-----
+1  | A Odisseia        | 2H52M   | odisseia.png       | 1
+2  | Homem Aranha 3    | 2H19M   | homemaranha3.png   | 2
+```
+
+---
+
+# 13. Tabela de sessões
+
+Agora precisamos saber **quando cada filme passa**.
+
+```sql
+CREATE TABLE sessoes (
+    id SERIAL PRIMARY KEY,
+    filme_id INTEGER NOT NULL,
+    sala INTEGER NOT NULL,
+    dia VARCHAR(30) NOT NULL,
+
+    FOREIGN KEY (filme_id)
+    REFERENCES filmes(id)
+);
+```
+
+Por exemplo:
+
+```text
+Sessão 1
+Filme: A Odisseia
+Sala: 1
+Dia: Segunda-feira
+```
+
+---
+
+# 14. Colocando as sessões
+
+```sql
+INSERT INTO sessoes (filme_id, sala, dia)
+VALUES
+(1, 1, 'Segunda-Feira'),
+(1, 1, 'Quarta-Feira'),
+(1, 1, 'Sexta-Feira'),
+(1, 1, 'Domingo'),
+(2, 2, 'Terça-Feira'),
+(2, 2, 'Quinta-Feira'),
+(2, 2, 'Sabado');
+```
+
+Agora não precisamos mais depender disso:
+
+```python
+datas_filme1 = [...]
+datas_filme2 = [...]
+```
+
+O banco sabe os dias.
+
+---
+
+# 15. Tabela de reservas
+
+Agora vem a parte mais importante.
+
+```sql
+CREATE TABLE reservas (
+    id SERIAL PRIMARY KEY,
+
+    sessao_id INTEGER NOT NULL,
+
+    fila INTEGER NOT NULL,
+
+    lugar INTEGER NOT NULL,
+
+    preco DECIMAL(10,2) NOT NULL,
+
+    data_reserva TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (sessao_id)
+    REFERENCES sessoes(id),
+
+    UNIQUE(sessao_id, fila, lugar)
+);
+```
+
+Essa tabela guarda:
+
+```text
+Reserva
+│
+├── Sessão
+├── Fila
+├── Lugar
+├── Preço
+└── Data/Hora
+```
+
+---
+
+# 16. Por que existe `UNIQUE`?
+
+Temos:
+
+```sql
+UNIQUE(sessao_id, fila, lugar)
+```
+
+Isso significa:
+
+> O mesmo assento não pode ser reservado duas vezes para a mesma sessão.
+
+Imagine:
+
+```text
+Sessão 1
+Fila 3
+Lugar 7
+```
+
+Um usuário reserva.
+
+Outro usuário tenta reservar:
+
+```text
+Sessão 1
+Fila 3
+Lugar 7
+```
+
+O PostgreSQL bloqueia a segunda reserva.
+
+Isso é muito melhor do que depender somente do Python.
+
+---
+
+# 17. Como fica o seu `fila01`?
+
+Atualmente você tem:
+
+```python
+fila01 = [0, 0, 0, 0, 0, ...]
+```
+
+Onde:
+
+```text
+0 = livre
+1 = reservado
+```
+
+Com o banco, não precisamos guardar 200 zeros.
+
+Podemos simplesmente guardar **as reservas existentes**.
+
+Por exemplo:
+
+```text
+Sessão 1
+
+Fila 2 → Lugar 5
+Fila 2 → Lugar 8
+Fila 6 → Lugar 12
+```
+
+Todo o resto está automaticamente livre.
+
+Isso é muito mais eficiente.
+
+---
+
+# 18. Como o Python descobre os assentos ocupados?
+
+Criamos:
+
+```python
+def buscar_assentos(sessao_id):
+
+    cursor.execute("""
+        SELECT fila, lugar
+        FROM reservas
+        WHERE sessao_id = %s
+    """, (sessao_id,))
+
+    return cursor.fetchall()
+```
+
+Se o banco tiver:
+
+```text
+Fila 2 | Lugar 5
+Fila 2 | Lugar 8
+Fila 6 | Lugar 12
+```
+
+o Python receberá:
+
+```python
+[(2, 5), (2, 8), (6, 12)]
+```
+
+---
+
+# 19. Pintando os botões
+
+Agora seu código pode fazer:
+
+```python
+reservados = buscar_assentos(sessao_id)
+
+if (fila, lugar) in reservados:
+    cor = "red"
+else:
+    cor = "green"
+```
+
+Resultado:
+
+```text
+Banco
+ ↓
+Assento ocupado?
+ ↓
+SIM → botão vermelho
+NÃO → botão verde
+```
+
+---
+
+# 20. Fazer uma reserva
+
+Em vez de:
+
+```python
+sala[fila][lugar] = 1
+```
+
+fazemos:
+
+```python
+def fazer_reserva_banco(sessao_id, fila, lugar):
+
+    cursor.execute("""
+        INSERT INTO reservas
+        (sessao_id, fila, lugar, preco)
+        VALUES (%s, %s, %s, %s)
+    """, (sessao_id, fila, lugar, 25))
+
+    conexao.commit()
+```
+
+O:
+
+```python
+conexao.commit()
+```
+
+é importante.
+
+Ele confirma a alteração no banco.
+
+---
+
+# 21. Cancelar reserva
+
+Em vez de:
+
+```python
+sala[fila][lugar] = 0
+```
+
+fazemos:
+
+```python
+def cancelar_reserva(sessao_id, fila, lugar):
+
+    cursor.execute("""
+        DELETE FROM reservas
+        WHERE sessao_id = %s
+        AND fila = %s
+        AND lugar = %s
+    """, (sessao_id, fila, lugar))
+
+    conexao.commit()
+```
+
+O registro é removido.
+
+Quando o mapa for atualizado:
+
+```text
+Reserva não existe
+       ↓
+Assento livre
+       ↓
+Botão verde
+```
+
+---
+
+# 22. Histórico
+
+Hoje você possui:
+
+```python
+historico = []
+```
+
+O problema:
+
+```text
+Programa fecha
+     ↓
+historico desaparece
+```
+
+Com PostgreSQL:
+
+```text
+Reserva
+   ↓
+Banco
+   ↓
+Continua salva
+```
+
+Podemos consultar:
+
+```sql
+SELECT
+    r.id,
+    f.nome,
+    s.sala,
+    r.fila,
+    r.lugar,
+    r.preco,
+    r.data_reserva
+
+FROM reservas r
+
+JOIN sessoes s
+ON r.sessao_id = s.id
+
+JOIN filmes f
+ON s.filme_id = f.id
+
+ORDER BY r.data_reserva DESC;
+```
+
+Isso permite mostrar:
+
+```text
+A Odisseia
+Sala 1
+Fila 3
+Lugar 8
+R$25,00
+21/08/2026 15:42
+```
+
+---
+
+# 23. E o `valor_total`?
+
+Hoje:
+
+```python
+valor_total = 0
+```
+
+E você fica aumentando e diminuindo manualmente.
+
+O banco consegue calcular:
+
+```sql
+SELECT COALESCE(SUM(preco), 0)
+FROM reservas;
+```
+
+Se existirem:
+
+```text
+R$25
+R$25
+R$25
+R$25
+```
+
+o banco retorna:
+
+```text
+R$100
+```
+
+Assim o valor não depende de uma variável que pode ficar errada.
+
+---
+
+# 24. O calendário
+
+Atualmente:
+
+```python
+datas_filme1 = [...]
+datas_filme2 = [...]
+```
+
+Depois:
+
+```text
+Calendário
+    ↓
+Python consulta PostgreSQL
+    ↓
+Quais sessões existem?
+    ↓
+Segunda → A Odisseia
+Quarta → A Odisseia
+Terça → Homem Aranha 3
+...
+```
+
+O programa não precisa ter os dias escritos diretamente no código.
+
+---
+
+# 25. Exemplo de consulta do calendário
+
+Para descobrir os dias de um filme:
+
+```python
+cursor.execute("""
+    SELECT dia
+    FROM sessoes
+    WHERE filme_id = %s
+""", (1,))
+
+dias = cursor.fetchall()
+```
+
+O resultado pode ser:
+
+```python
+[
+    ("Segunda-Feira",),
+    ("Quarta-Feira",),
+    ("Sexta-Feira",),
+    ("Domingo",)
+]
+```
+
+---
+
+# 26. O que vai desaparecer do código?
+
+Depois que tudo estiver funcionando, estas estruturas podem deixar de ser a fonte oficial:
+
+```python
+datas_filme1 = [...]
+datas_filme2 = [...]
+
+fila01 = [...]
+fila11 = [...]
+fila21 = [...]
+fila31 = [...]
+...
+fila92 = [...]
+
+historico = []
+```
+
+O PostgreSQL passa a ser a fonte oficial.
+
+---
+
+# 27. Mas não precisa apagar tudo de uma vez
+
+**Não façam isso.**
+
+A integração deve ser gradual.
+
+Primeiro:
+
+```text
+Python + PostgreSQL
+```
+
+funcionando.
+
+Depois:
+
+```text
+Filmes
+```
+
+Depois:
+
+```text
+Sessões
+```
+
+Depois:
+
+```text
+Calendário
+```
+
+Depois:
+
+```text
+Assentos
+```
+
+Depois:
+
+```text
+Reservas
+```
+
+Depois:
+
+```text
+Cancelamentos
+```
+
+Depois:
+
+```text
+Histórico
+```
+
+Assim, se alguma coisa quebrar, vocês sabem exatamente onde foi.
+
+---
+
+# 28. Ordem que o amigo deve seguir
+
+### Etapa 1 — Instalação
+
+* [ ] Instalar PostgreSQL
+* [ ] Criar banco `gerenciador_teatro`
+* [ ] Instalar `psycopg2-binary`
+
+### Etapa 2 — Conexão
+
+* [ ] Importar `psycopg2`
+* [ ] Criar `conexao`
+* [ ] Criar `cursor`
+* [ ] Testar conexão
+
+### Etapa 3 — Tabelas
+
+* [ ] Criar `filmes`
+* [ ] Criar `sessoes`
+* [ ] Criar `reservas`
+
+### Etapa 4 — Dados
+
+* [ ] Inserir A Odisseia
+* [ ] Inserir Homem Aranha 3
+* [ ] Inserir sessões
+* [ ] Testar consultas
+
+### Etapa 5 — Reservas
+
+* [ ] Criar INSERT
+* [ ] Mostrar assentos ocupados
+* [ ] Impedir reserva duplicada
+* [ ] Criar cancelamento
+
+### Etapa 6 — Interface
+
+* [ ] Conectar calendário ao banco
+* [ ] Conectar filmes ao banco
+* [ ] Conectar mapa de assentos ao banco
+* [ ] Conectar histórico ao banco
+
+### Etapa 7 — Teste
+
+* [ ] Fazer uma reserva
+* [ ] Fechar o programa
+* [ ] Abrir novamente
+* [ ] Verificar se o assento continua vermelho
+* [ ] Cancelar
+* [ ] Abrir novamente
+* [ ] Verificar se voltou a ficar verde
+
+---
+
+# 29. Um detalhe MUITO importante
+
+Se vocês fizerem:
+
+```python
+conexao = psycopg2.connect(
+    password="SUA_SENHA"
+)
+```
+
+e colocarem o projeto no GitHub, **não deixem uma senha real no código**, principalmente se o repositório for público.
+
+O ideal é usar variável de ambiente para a senha.
+
+Mas como o trabalho precisa ser monolítico, isso **não significa que vocês precisam separar o Python em vários arquivos**.
+
+Pode continuar:
+
+```text
+main.py
+```
+
+com tudo dentro.
+
+---
+
+# 30. Como pensar no projeto depois da integração
+
+O programa vai funcionar mais ou menos assim:
+
+```text
+                    GERENCIADOR DE TEATRO
+                             │
+                             ▼
+                         PYTHON
+                             │
+          ┌──────────────────┼──────────────────┐
+          │                  │                  │
+          ▼                  ▼                  ▼
+      Calendário           Filmes             Salas
+          │                  │                  │
+          └──────────────────┼──────────────────┘
+                             │
+                             ▼
+                        POSTGRESQL
+                             │
+             ┌───────────────┼───────────────┐
+             ▼               ▼               ▼
+          filmes          sessoes         reservas
+                                             │
+                                             ▼
+                                          histórico
+```
+
+---
+
+# 31. Resumão para o Roger
+
+Se ele perguntar:
+
+> **"Qual é a função do PostgreSQL nesse projeto?"**
+
+A resposta é:
+
+> O PostgreSQL será responsável por armazenar permanentemente os dados do sistema, como filmes, sessões, salas, reservas, assentos ocupados, preços e histórico. O Python continuará responsável pela interface gráfica e pela lógica do programa, consultando e alterando os dados no PostgreSQL.
+
+Se ele perguntar:
+
+> **"Por que não deixar tudo em variável?"**
+
+Resposta:
+
+> Porque variáveis armazenam dados apenas durante a execução do programa. O banco permite que os dados continuem salvos mesmo depois que o programa for fechado.
+
+Se ele perguntar:
+
+> **"Por que PostgreSQL?"**
+
+Resposta:
+
+> Porque é um sistema de banco de dados relacional robusto, permite relacionar filmes, sessões e reservas e garante regras como impedir que o mesmo assento seja reservado duas vezes para a mesma sessão.
+
+---
+
+# 32. A ideia final
+
+Hoje:
+
+```text
+Python
+  │
+  ├── filmes
+  ├── datas
+  ├── salas
+  ├── assentos
+  ├── reservas
+  └── histórico
+```
+
+Depois:
+
+```text
+Python
+  │
+  └── Interface + lógica
+          │
+          ▼
+     PostgreSQL
+          │
+          ├── Filmes
+          ├── Sessões
+          ├── Salas
+          ├── Reservas
+          └── Histórico
+```
+
+**Em uma frase:**
+
+> **O Python deixa de ser o lugar onde os dados do teatro ficam guardados e passa a ser o programa que conversa com o PostgreSQL para buscar e modificar esses dados.**
+
+E pronto. **Isso é exatamente o que seu amigo precisa entender antes de começar a mexer no seu código.** Se ele conseguir seguir esse documento sem transformar o banco numa bomba nuclear, já está no lucro. 🗿
