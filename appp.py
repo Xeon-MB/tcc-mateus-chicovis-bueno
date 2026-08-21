@@ -186,16 +186,6 @@ def mostrar_filmes():
     duracao_filme2.grid(row=2, column = 1, padx=10)
     sala_filme2 = ctk.CTkLabel(menu, text="SALA: 2", font=("Arial", 15))
     sala_filme2.grid(row=3, column = 1, padx=10)
-    
-    filme3 = ctk.CTkButton(menu, text="",image = image3, width=200, height=300, fg_color="transparent")
-    filme3.grid(row=0, column = 2, padx=10)
-    nome_filme3 = ctk.CTkLabel(menu, text="Barbie", font=("Arial", 15, "bold"))
-    nome_filme3.grid(row=1, column = 2, padx=10)
-    duracao_filme3 = ctk.CTkLabel(menu, text="Duração: 1H54M", font=("Arial", 15))
-    duracao_filme3.grid(row=2, column = 2, padx=10)
-    sala_filme3 = ctk.CTkLabel(menu, text="SALA: 3", font=("Arial", 15))
-    sala_filme3.grid(row=3, column = 2, padx=10)
-    
 def menu_calendario():
     global menu
     tirar_menu()
