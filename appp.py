@@ -35,9 +35,12 @@ sala2 = [fila02, fila12, fila22, fila32, fila42, fila52, fila62, fila72, fila82,
 
 # Dados do Sistema
 global valor_total
+global datas_filme1
+global datas_filme2
 valor_total = 0
 historico = []
-
+datas_filme1 = ["Segunda-Feira", "Quarta-Feira", "Sexta-Feira", "Domingo"]
+datas_filme2 = ["Terça-Feira", "Quinta-Feira", "Sabado"]
 # Variáveis de Interface
 sala_definida1 = None
 sala_definida2 = None
@@ -192,20 +195,9 @@ def fechar():
     nao = ctk.CTkButton(janela, text="Continuar", fg_color="Green", text_color="white", command=janela.destroy)
     nao.pack(side="left", anchor="n", padx=10)
 
-
-def mostrar_filmes():
-    global menu
-    global sala_filme
-
-    tirar_menu()
-
-    menu = ctk.CTkFrame(app, width=1900, fg_color="transparent")
-    menu.pack(side="left", fill="y")
-
+def mostrar_filme1():
     image1 = ctk.CTkImage(light_image=Image.open("odisseia.png"), dark_image=Image.open("odisseia.png"), size=(200, 300))
-    image2 = ctk.CTkImage(light_image=Image.open("homemaranha3.png"), dark_image=Image.open("homemaranha3.png"), size=(200, 300))
-    image3 = ctk.CTkImage(light_image=Image.open("barbie.png"), dark_image=Image.open("barbie.png"), size=(200, 300))
-
+    
     sala_filme = sala1
     filme1 = ctk.CTkButton(menu, text="", image=image1, width=200, height=300, fg_color="transparent", command=lambda s=sala_filme: reserva(s))
     filme1.grid(row=0, column=0, padx=10)
@@ -218,7 +210,10 @@ def mostrar_filmes():
 
     sala_filme1 = ctk.CTkLabel(menu, text="SALA: 1", font=("Arial", 15))
     sala_filme1.grid(row=3, column=0, padx=10)
-
+    
+def mostrar_filme2():
+    image2 = ctk.CTkImage(light_image=Image.open("homemaranha3.png"), dark_image=Image.open("homemaranha3.png"), size=(200, 300))
+    
     sala_filme = sala2
     filme2 = ctk.CTkButton(menu, text="", image=image2, width=200, height=300, fg_color="transparent", command=lambda s=sala_filme: reserva(s))
     filme2.grid(row=0, column=1, padx=10)
@@ -233,19 +228,70 @@ def mostrar_filmes():
     sala_filme2.grid(row=3, column=1, padx=10)
 
 
+def mostrar_filmes():
+    global menu
+    global sala_filme
+    tirar_menu()
+
+    menu = ctk.CTkFrame(app, width=1900, fg_color="transparent")
+    menu.pack(side="left", fill="y")
+
+    mostrar_filme1()
+
+    mostrar_filme2()
+
+# ===========================    
+# CALENDÁRIO
+# ===========================
+
+def mostrar_filme_data(data):
+    global datas_filme1
+    global datas_filme2
+    global menu
+    tirar_menu()
+    if data in datas_filme1:
+        menu = ctk.CTkToplevel(app)
+        menu.title("Filme do dia")
+        menu.geometry("400x500")
+        
+        mostrar_filme1()
+    elif data in datas_filme2:
+        menu = ctk.CTkToplevel(app)
+        menu.title("Filme do dia")
+        menu.geometry("400x500")
+        
+        mostrar_filme2()
+
 def menu_calendario():
     global menu
     tirar_menu()
 
-    calendar = ctk.CTkFrame(app)
-    calendar.pack()
+    menu = ctk.CTkFrame(app)
+    menu.pack()
 
-    label = ctk.CTkLabel(calendar, text="Semana Atual")
+    label = ctk.CTkLabel(menu, text="Semana Atual")
     label.grid(row=0, column=3)
 
-    for i in range(7):
-        button = ctk.CTkButton(calendar, text=f"Dia: {i+1}", width=20, height=10)
-        button.grid(row=1, column=i, padx=10)
+    segunda = ctk.CTkButton(menu, text="Segunda-feira", command = lambda d = "Segunda-Feira": mostrar_filme_data(d))
+    segunda.grid(row=1, column=0, padx = 10, pady = 10)
+    
+    terca = ctk.CTkButton(menu, text="Terça-feira", command = lambda d = "Terça-Feira": mostrar_filme_data(d))
+    terca.grid(row=1, column=1, padx = 10, pady = 10)
+
+    quarta = ctk.CTkButton(menu, text="Quarta-feira", command = lambda d = "Quarta-Feira": mostrar_filme_data(d))
+    quarta.grid(row=1, column=2, padx = 10, pady = 10)
+
+    quinta = ctk.CTkButton(menu, text="Quinta-feira", command = lambda d = "Quinta-Feira": mostrar_filme_data(d))
+    quinta.grid(row=1, column=3, padx = 10, pady = 10)
+
+    sexta = ctk.CTkButton(menu, text="Sexta-feira", command = lambda d = "Sexta-Feira": mostrar_filme_data(d))
+    sexta.grid(row=1, column=4, padx = 10, pady = 10)
+
+    sabado = ctk.CTkButton(menu, text="Sábado", command = lambda d = "Sabado": mostrar_filme_data(d))
+    sabado.grid(row=1, column=5, padx = 10, pady = 10)
+
+    domingo = ctk.CTkButton(menu, text="Domingo", command = lambda d = "Domingo": mostrar_filme_data(d))
+    domingo.grid(row=1, column=6, padx = 10, pady = 10)
 
 
 # ==========================================
