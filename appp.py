@@ -89,20 +89,30 @@ def menu_salas():
     mostrar_sala2()
     
 def fazer_reserva(sala,fila, lugar, botao):
+    global menu
+    global valor
+    global preco
+    if "preco" in globals() and preco.winfo_exists():
+        preco.destroy()
+
+    valor = valor + 25
     sala[fila][lugar] = 1
     botao.configure(fg_color="red")
+    preco = ctk.CTkLabel(menu, text=f"Total: R${valor:.2f}")
+    preco.grid(column = 5, columnspan=10)
     
 
 def reserva(sala):
+    global menu
+    global valor
+    valor = 0
     tirar_menu()
-    reserva= ctk.CTkToplevel(app)
-    reserva.title("Reservar Sala")
-    reserva.geometry("500x400")
+    menu = ctk.CTkFrame(app)
+    menu.pack()
     
-    assentos = ctk.CTkFrame(reserva, fg_color="transparent")
-    assentos.pack()
+
     
-    titulo= ctk.CTkLabel(assentos, text=f"Sala")
+    titulo= ctk.CTkLabel(menu, text=f"Sala")
     titulo.grid(row = 0, column = 11)
 
     for fila in range(10):
@@ -115,11 +125,11 @@ def reserva(sala):
             else:
                 cor = "yellow"
 
-            botao = ctk.CTkButton(assentos,text=str(lugar + 1),width=20,height=10,fg_color=cor)
+            botao = ctk.CTkButton(menu,text=str(lugar + 1),width=20,height=10,fg_color=cor)
             botao.configure(command=lambda s = sala, f=fila, l=lugar, b=botao: fazer_reserva(s, f, l, b))
             botao.grid(row=(fila+1),column=(lugar+1),padx=5,pady=5)
-    feito = ctk.CTkButton(reserva, text="Reserva Feita!", command = reserva.destroy)
-    feito.pack()   
+    feito = ctk.CTkButton(menu, text="Reserva Feita!", command = mostrar_filmes)
+    feito.grid(column = 6, columnspan=10)   
     
 
 def fechar():
@@ -190,8 +200,17 @@ def calendario():
         button.grid(row = 1, column = i, padx=10)
         
 def fazer_cancela(sala,fila, lugar, botao):
+    global menu
+    global valor
+    global preco
+    if "preco" in globals() and preco.winfo_exists():
+        preco.destroy()
+
+    valor = valor - 25
     sala[fila][lugar] = 0
     botao.configure(fg_color="green")
+    preco = ctk.CTkLabel(menu, text=f"Total: R${valor:.2f}")
+    preco.grid(column = 5, columnspan=10)
         
 def selecionado(option):
     global menu
@@ -213,7 +232,7 @@ def selecionado(option):
                 botao.grid(row=(fila+1),column=(lugar+1),padx=5,pady=5)
 
         
-def cancelar():
+def menu_cancelar():
     global menu    
     tirar_menu()
     menu = ctk.CTkFrame(app, width=1900)
@@ -222,7 +241,10 @@ def cancelar():
     t_cancela.grid(row = 1, column = 0)
     
     option = ctk.CTkOptionMenu(menu, values=["Sala 1", "Sala 2"], command=selecionado)
-    option.grid(row = 2, column = 0)
+    option.grid(row = 2, column = 0, pady = 10)
+    
+    feito = ctk.CTkButton(menu, text="Cancela Feita", command=menu_cancelar)
+    feito.grid(row = 3, column = 0, pady = 10)
 
 app = ctk.CTk()
 app.title("Gerenciador de Teatro")
@@ -240,7 +262,7 @@ titulo_barra.pack(pady=(30, 20))
 botao_filmes = ctk.CTkButton(barra_lateral, text="Fazer Reservas", fg_color="transparent", font=("Arial", 15), command=mostrar_filmes)
 botao_filmes.pack()
 
-cancelar = ctk.CTkButton(barra_lateral, text="Cancelar Reserva", fg_color="transparent", font=("Arial", 15), command=cancelar)
+cancelar = ctk.CTkButton(barra_lateral, text="Cancelar Reserva", fg_color="transparent", font=("Arial", 15), command=menu_cancelar)
 cancelar.pack()
 
 botao_salas = ctk.CTkButton(barra_lateral, text="Ver Salas", fg_color="transparent", font=("Arial", 15), command=menu_salas)
