@@ -387,7 +387,8 @@ def menu_historico():
 
 app = ctk.CTk()
 app.title("Gerenciador de Teatro")
-app.attributes('-fullscreen', True)
+app.after(200, lambda: app.state("zoomed"))
+ctk.set_appearance_mode("dark")
 
 titulo = ctk.CTkLabel(app, text="Gerenciador de Teatro", font=("Arial", 24, "bold"))
 titulo.pack(padx=0, pady=30)
