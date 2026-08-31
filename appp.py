@@ -68,7 +68,9 @@ def mostrar_sala1():
     sala_definida1.grid(row=1, column=0, padx=10)
 
     for fila in range(10):
+        letra = chr(65 + fila)
         for lugar in range(20):
+            codigo = f"{letra}{lugar}"
             if sala1[fila][lugar] == 0:
                 cor = "green"
             elif sala1[fila][lugar] == 1:
@@ -76,7 +78,7 @@ def mostrar_sala1():
             else:
                 cor = "yellow"
 
-            botao = ctk.CTkButton(sala_definida1, text=str(lugar + 1), width=20, height=10, fg_color=cor)
+            botao = ctk.CTkButton(sala_definida1, text=codigo, width=20, height=10, fg_color=cor)
             botao.grid(row=fila, column=lugar, padx=5, pady=5)
 
 
@@ -89,7 +91,9 @@ def mostrar_sala2():
     sala_definida2.grid(row=1, column=1, padx=10)
 
     for fila in range(10):
+        letra = chr(65 + fila)
         for lugar in range(20):
+            codigo = f"{letra}{lugar}"
             if sala2[fila][lugar] == 0:
                 cor = "green"
             elif sala2[fila][lugar] == 1:
@@ -97,7 +101,7 @@ def mostrar_sala2():
             else:
                 cor = "yellow"
 
-            botao = ctk.CTkButton(sala_definida2, text=str(lugar + 1), width=20, height=10, fg_color=cor)
+            botao = ctk.CTkButton(sala_definida2, text=codigo, width=20, height=10, fg_color=cor)
             botao.grid(row=fila, column=lugar, padx=5, pady=5)
 
 
@@ -196,7 +200,7 @@ def fechar():
     nao.pack(side="left", anchor="n", padx=10)
 
 def mostrar_filme1():
-    image1 = ctk.CTkImage(light_image=Image.open("odisseia.png"), dark_image=Image.open("odisseia.png"), size=(200, 300))
+    image1 = ctk.CTkImage(light_image=Image.open(r"C:\Users\Aluno\Desktop\tcc\tcc-mateus-chicovis-bueno\odisseia.png"), dark_image=Image.open(r"C:\Users\Aluno\Desktop\tcc\tcc-mateus-chicovis-bueno\odisseia.png"), size=(200, 300))
     
     sala_filme = sala1
     filme1 = ctk.CTkButton(menu, text="", image=image1, width=200, height=300, fg_color="transparent", command=lambda s=sala_filme: reserva(s))
@@ -212,7 +216,7 @@ def mostrar_filme1():
     sala_filme1.grid(row=3, column=0, padx=10)
     
 def mostrar_filme2():
-    image2 = ctk.CTkImage(light_image=Image.open("homemaranha3.png"), dark_image=Image.open("homemaranha3.png"), size=(200, 300))
+    image2 = ctk.CTkImage(light_image=Image.open(r"C:\Users\Aluno\Desktop\tcc\tcc-mateus-chicovis-bueno\homemaranha3.png"), dark_image=Image.open(r"C:\Users\Aluno\Desktop\tcc\tcc-mateus-chicovis-bueno\homemaranha3.png"), size=(200, 300))
     
     sala_filme = sala2
     filme2 = ctk.CTkButton(menu, text="", image=image2, width=200, height=300, fg_color="transparent", command=lambda s=sala_filme: reserva(s))
@@ -350,7 +354,7 @@ def menu_cancelar():
     menu = ctk.CTkFrame(app, width=1900)
     menu.pack()
 
-    t_cancela = ctk.CTkLabel(menu, text="Qual sala você quer botao_cancelar?")
+    t_cancela = ctk.CTkLabel(menu, text="Qual sala você quer cancelar?")
     t_cancela.grid(row=1, column=0)
 
     option = ctk.CTkOptionMenu(menu, values=["Sala 1", "Sala 2"], command=selecionado)
