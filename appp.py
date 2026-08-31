@@ -357,7 +357,7 @@ def menu_cancelar():
     t_cancela = ctk.CTkLabel(menu, text="Qual sala você quer cancelar?")
     t_cancela.grid(row=1, column=0)
 
-    option = ctk.CTkOptionMenu(menu, values=["Sala 1", "Sala 2"], command=selecionado)
+    option = ctk.CTkOptionMenu(menu, values=["Selecione uma opção", "Sala 1", "Sala 2"], command=selecionado)
     option.grid(row=2, column=0, pady=10)
 
     feito = ctk.CTkButton(menu, text="Cancela Feita", command=menu_cancelar)
