@@ -192,7 +192,7 @@ def fechar():
     janela.title("Sair?")
     janela.geometry("320x150")
 
-    aviso = ctk.CTkLabel(janela, text="Quar realmente sair?")
+    aviso = ctk.CTkLabel(janela, text="Quer realmente sair?")
     aviso.pack(padx=0, pady=30)
 
     sim = ctk.CTkButton(janela, text="Sair", fg_color="red", text_color="white", command=app.destroy)
