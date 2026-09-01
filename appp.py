@@ -254,26 +254,15 @@ def mostrar_filme_data(data):
     global datas_filme1
     global datas_filme2
     global menu
-    tirar_menu()
     if data in datas_filme1:
-        menu = ctk.CTkToplevel(app)
-        menu.title("Filme do dia")
-        menu.geometry("400x500")
-
-        menu.transient(app)
-        menu.lift()
-        menu.focus_force()
-        
+        tirar_menu()
+        menu = ctk.CTkFrame(app)
+        menu.pack()
         mostrar_filme1()
     elif data in datas_filme2:
-        menu = ctk.CTkToplevel(app)
-        menu.title("Filme do dia")
-        menu.geometry("400x500")
-
-        menu.transient(app)
-        menu.lift()
-        menu.focus_force()
-        
+        tirar_menu()
+        menu = ctk.CTkFrame(app)
+        menu.pack()
         mostrar_filme2()
 
 def menu_calendario():
