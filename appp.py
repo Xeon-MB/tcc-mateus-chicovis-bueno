@@ -1,5 +1,3 @@
-import customtkinter as ctk
-from PIL import Image
 import subprocess
 import sys
 def verificar_e_instalar(pacote):
@@ -11,6 +9,11 @@ def verificar_e_instalar(pacote):
 
 verificar_e_instalar("customtkinter")
 verificar_e_instalar("PIL")
+verificar_e_instalar("psycopg2")
+
+import psycopg2
+import customtkinter as ctk
+from PIL import Image
 
 # ==========================================
 # VARIÁVEIS GLOBAIS E INICIALIZAÇÃO DE DADOS
