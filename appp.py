@@ -259,12 +259,20 @@ def mostrar_filme_data(data):
         menu = ctk.CTkToplevel(app)
         menu.title("Filme do dia")
         menu.geometry("400x500")
+
+        menu.transient(app)
+        menu.lift()
+        menu.focus_force()
         
         mostrar_filme1()
     elif data in datas_filme2:
         menu = ctk.CTkToplevel(app)
         menu.title("Filme do dia")
         menu.geometry("400x500")
+
+        menu.transient(app)
+        menu.lift()
+        menu.focus_force()
         
         mostrar_filme2()
 
