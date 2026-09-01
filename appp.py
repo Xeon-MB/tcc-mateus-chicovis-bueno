@@ -1,5 +1,16 @@
 import customtkinter as ctk
 from PIL import Image
+import subprocess
+import sys
+def verificar_e_instalar(pacote):
+    try:
+        __import__(pacote)
+    except ImportError:
+        print(f"Biblioteca '{pacote}' não encontrada. Instalando automaticamente...")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", pacote])
+
+verificar_e_instalar("customtkinter")
+verificar_e_instalar("PIL")
 
 # ==========================================
 # VARIÁVEIS GLOBAIS E INICIALIZAÇÃO DE DADOS
