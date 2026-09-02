@@ -216,7 +216,7 @@ def fechar():
     nao.pack(side="left", anchor="n", padx=10)
 
 def mostrar_filme1():
-    image1 = ctk.CTkImage(light_image=Image.open("tcc-mateus-chicovis-bueno/odisseia.png"), dark_image=Image.open("tcc-mateus-chicovis-bueno/odisseia.png"), size=(200, 300))
+    image1 = ctk.CTkImage(light_image=Image.open("odisseia.png"), dark_image=Image.open("odisseia.png"), size=(200, 300))
     
     sala_filme = sala1
     filme1 = ctk.CTkButton(menu, text="", image=image1, width=200, height=300, fg_color="transparent", command=lambda s=sala_filme: reserva(s))
@@ -232,7 +232,7 @@ def mostrar_filme1():
     sala_filme1.grid(row=3, column=0, padx=10)
     
 def mostrar_filme2():
-    image2 = ctk.CTkImage(light_image=Image.open("tcc-mateus-chicovis-bueno/homemaranha3.png"), dark_image=Image.open("tcc-mateus-chicovis-bueno/homemaranha3.png"), size=(200, 300))
+    image2 = ctk.CTkImage(light_image=Image.open("homemaranha3.png"), dark_image=Image.open("homemaranha3.png"), size=(200, 300))
     
     sala_filme = sala2
     filme2 = ctk.CTkButton(menu, text="", image=image2, width=200, height=300, fg_color="transparent", command=lambda s=sala_filme: reserva(s))
