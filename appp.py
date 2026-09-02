@@ -8,7 +8,7 @@ def verificar_e_instalar(pacote):
         subprocess.check_call([sys.executable, "-m", "pip", "install", pacote])
 
 verificar_e_instalar("customtkinter")
-verificar_e_instalar("PIL")
+verificar_e_instalar("pillow")
 verificar_e_instalar("psycopg2")
 
 import psycopg2
