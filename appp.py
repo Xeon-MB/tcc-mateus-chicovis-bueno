@@ -409,31 +409,31 @@ app.title("Gerenciador de Teatro")
 app.after(200, lambda: app.state("zoomed"))
 ctk.set_appearance_mode("dark")
 
-titulo = ctk.CTkLabel(app, text="Gerenciador de Teatro", font=("Arial", 24, "bold"))
+titulo = ctk.CTkLabel(app, text="CineSenai", font=("Arial", 40, "bold"))
 titulo.pack(padx=0, pady=30)
 
-barra_lateral = ctk.CTkFrame(app, width=180)
+barra_lateral = ctk.CTkFrame(app, width=180, fg_color="#8D2D2D")
 barra_lateral.pack(side="left", fill="y")
 
-titulo_barra = ctk.CTkLabel(barra_lateral, text="MENU", font=("Arial", 20, "bold"))
-titulo_barra.pack(pady=(30, 20))
+titulo_barra = ctk.CTkLabel(barra_lateral, text="MENU", font=("Arial", 20, "bold"), fg_color="#FFFFFF", text_color="#000000")
+titulo_barra.pack(fill = "x", pady=(30, 20))
 
-botao_filmes = ctk.CTkButton(barra_lateral, text="Fazer Reservas", fg_color="transparent", font=("Arial", 15), command=mostrar_filmes)
+botao_filmes = ctk.CTkButton(barra_lateral, text="Fazer Reservas", fg_color="transparent", font=("Arial", 15), command=mostrar_filmes, hover_color="#551A1A")
 botao_filmes.pack()
 
-botao_cancelar = ctk.CTkButton(barra_lateral, text="Cancelar Reserva", fg_color="transparent", font=("Arial", 15), command=menu_cancelar)
+botao_cancelar = ctk.CTkButton(barra_lateral, text="Cancelar Reserva", fg_color="transparent", font=("Arial", 15), command=menu_cancelar, hover_color="#551A1A")
 botao_cancelar.pack()
 
-botao_salas = ctk.CTkButton(barra_lateral, text="Ver Salas", fg_color="transparent", font=("Arial", 15), command=menu_salas)
+botao_salas = ctk.CTkButton(barra_lateral, text="Ver Salas", fg_color="transparent", font=("Arial", 15), command=menu_salas, hover_color="#551A1A")
 botao_salas.pack()
 
-botao_calendario = ctk.CTkButton(barra_lateral, text="Calendário", fg_color="transparent", font=("Arial", 15), command=menu_calendario)
+botao_calendario = ctk.CTkButton(barra_lateral, text="Calendário", fg_color="transparent", font=("Arial", 15), command=menu_calendario, hover_color="#551A1A")
 botao_calendario.pack()
 
-botao_historico = ctk.CTkButton(barra_lateral, text="Histórico", fg_color="transparent", font=("Arial", 15), command=menu_historico)
+botao_historico = ctk.CTkButton(barra_lateral, text="Histórico", fg_color="transparent", font=("Arial", 15), command=menu_historico, hover_color="#551A1A")
 botao_historico.pack()
 
-botao_sair = ctk.CTkButton(barra_lateral, text="Sair", fg_color="transparent", font=("Arial", 15), command=fechar)
+botao_sair = ctk.CTkButton(barra_lateral, text="Sair", fg_color="#FF0000", font=("Arial", 15), command=fechar, hover_color="#551A1A")
 botao_sair.pack()
 
 app.mainloop()
