@@ -393,11 +393,11 @@ def menu_historico():
     menu.pack()
 
     for x in range(len(historico)):
-        h = ctk.CTkLabel(menu, text=historico[x])
-        h.grid(row=x, column=0)
+        hist = ctk.CTkLabel(menu, text=historico[x])
+        hist.grid(row=x, column=0)
 
-    i = ctk.CTkLabel(menu, text=f"Valor Total: R${valor_total:.2f}")
-    i.grid(column=0)
+    valorTotal = ctk.CTkLabel(menu, text=f"Valor Total: R${valor_total:.2f}")
+    valorTotal.grid(column=0)
 
 
 # ==========================================
