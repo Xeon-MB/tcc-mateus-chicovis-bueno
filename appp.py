@@ -409,14 +409,14 @@ app.title("Gerenciador de Teatro")
 app.after(200, lambda: app.state("zoomed"))
 ctk.set_appearance_mode("dark")
 
-titulo = ctk.CTkLabel(app, text="CineSenai", font=("Arial", 40, "bold"))
-titulo.pack(padx=0, pady=30)
+titulo = ctk.CTkLabel(app, text="CineSenai", font=("Arial", 40, "bold"), fg_color="#8D2D2D")
+titulo.pack(fill = "x")
 
-barra_lateral = ctk.CTkFrame(app, width=180, fg_color="#8D2D2D")
+barra_lateral = ctk.CTkFrame(app, width=180, fg_color="#8D2D2D", corner_radius = 0)
 barra_lateral.pack(side="left", fill="y")
 
 titulo_barra = ctk.CTkLabel(barra_lateral, text="MENU", font=("Arial", 20, "bold"), fg_color="#FFFFFF", text_color="#000000")
-titulo_barra.pack(fill = "x", pady=(30, 20))
+titulo_barra.pack( fill = "x", pady=(30, 20))
 
 botao_filmes = ctk.CTkButton(barra_lateral, text="Fazer Reservas", fg_color="transparent", font=("Arial", 15), command=mostrar_filmes, hover_color="#551A1A")
 botao_filmes.pack()
