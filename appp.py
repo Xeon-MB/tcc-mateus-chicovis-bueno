@@ -14,6 +14,7 @@ verificar_e_instalar("psycopg2")
 import psycopg2
 import customtkinter as ctk
 from PIL import Image
+from pathlib import Path
 
 # ==========================================
 # VARIÁVEIS GLOBAIS E INICIALIZAÇÃO DE DADOS
@@ -51,6 +52,7 @@ sala2 = [fila02, fila12, fila22, fila32, fila42, fila52, fila62, fila72, fila82,
 global valor_total
 global datas_filme1
 global datas_filme2
+BASE_DIR = Path(__file__).resolve().parent
 valor_total = 0
 historico = []
 datas_filme1 = ["Segunda-Feira", "Quarta-Feira", "Sexta-Feira", "Domingo"]
@@ -216,8 +218,9 @@ def fechar():
     nao.pack(side="left", anchor="n", padx=10)
 
 def mostrar_filme1():
-    image1 = ctk.CTkImage(light_image=Image.open("odisseia.png"), dark_image=Image.open("odisseia.png"), size=(200, 300))
-    
+#se nn funcionar essa porra em outro pc eu prefiro enfiar minha cabeça no monitor
+    caminho_imagem1 = BASE_DIR / "odisseia.png"
+    image1 = ctk.CTkImage(light_image=Image.open(caminho_imagem1), dark_image=Image.open(caminho_imagem1), size=(200, 300))
     sala_filme = sala1
     filme1 = ctk.CTkButton(menu, text="", image=image1, width=200, height=300, fg_color="transparent", command=lambda s=sala_filme: reserva(s))
     filme1.grid(row=0, column=0, padx=10)
@@ -232,7 +235,9 @@ def mostrar_filme1():
     sala_filme1.grid(row=3, column=0, padx=10)
     
 def mostrar_filme2():
-    image2 = ctk.CTkImage(light_image=Image.open("homemaranha3.png"), dark_image=Image.open("homemaranha3.png"), size=(200, 300))
+#se nn funcionar essa porra em outro pc eu prefiro enfiar minha cabeça no monitor
+    caminho_imagem2 = BASE_DIR / "homemaranha3.png"
+    image2 = ctk.CTkImage(light_image=Image.open(caminho_imagem2), dark_image=Image.open(caminho_imagem2), size=(200, 300))
     
     sala_filme = sala2
     filme2 = ctk.CTkButton(menu, text="", image=image2, width=200, height=300, fg_color="transparent", command=lambda s=sala_filme: reserva(s))
