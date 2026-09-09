@@ -61,7 +61,58 @@ datas_filme2 = ["Terça-Feira", "Quinta-Feira", "Sabado"]
 sala_definida1 = None
 sala_definida2 = None
 
+#bagual do banco
+conexao = psycopg2.connect(
+    dbname = "wow",
+    host="localhost",
+    port="5432",
+    username="postgres",
+    senha="root"
+)
+#nao sei como essa porra ta funfando, mas ta XDDDD
+def carregar_banco():
 
+    # SALA 1
+    cursor.execute("""
+        SELECT fila, numero, reservado
+        FROM assentos
+        WHERE sala_id = 1
+    """)
+
+    dados = cursor.fetchall()
+
+    for fila, numero, reservado in dados:
+
+        linha = ord(fila) - 65
+        coluna = numero - 1
+
+        if reservado:
+            sala1[linha][coluna] = 1
+        else:
+            sala1[linha][coluna] = 0
+
+
+    # SALA 2
+    cursor.execute("""
+        SELECT fila, numero, reservado
+        FROM assentos
+        WHERE sala_id = 2
+    """)
+
+    dados = cursor.fetchall()
+
+    for fila, numero, reservado in dados:
+
+        linha = ord(fila) - 65
+        coluna = numero - 1
+
+        if reservado:
+            sala2[linha][coluna] = 1
+        else:
+            sala2[linha][coluna] = 0
+
+cursor = conexao.cursor()
+print("banco de dados conectado")
 # ==========================================
 # FUNÇÕES DE INTERFACE E UTILIDADES
 # ==========================================
@@ -197,7 +248,6 @@ def reserva(sala):
 
     feito = ctk.CTkButton(menu, text="Reserva Feita!", command=mostrar_filmes)
     feito.grid(column=6, columnspan=10)
-
 
 # ==========================================
 # FUNÇÕES DE SAÍDA E NAVEGAÇÃO
