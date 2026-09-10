@@ -82,6 +82,9 @@ def mostrar_sala1():
 
     sala_definida1 = ctk.CTkFrame(menu, fg_color="transparent")
     sala_definida1.grid(row=1, column=0, padx=10)
+    
+    tela = ctk.CTkLabel(menu,text = "T E L A", fg_color="#FFFFFF", text_color="#000000")
+    tela.grid(stick = "ew")
 
     for fila in range(10):
         letra = chr(65 + fila)
@@ -95,7 +98,7 @@ def mostrar_sala1():
                 cor = "yellow"
 
             botao = ctk.CTkButton(sala_definida1, text=codigo, width=20, height=10, fg_color=cor)
-            botao.grid(row=fila, column=lugar, padx=5, pady=5)
+            botao.grid(row=(fila+1), column=lugar, padx=5, pady=5)
 
 
 def mostrar_sala2():
@@ -106,6 +109,9 @@ def mostrar_sala2():
     sala_definida2 = ctk.CTkFrame(menu, fg_color="transparent")
     sala_definida2.grid(row=1, column=1, padx=10)
 
+    tela = ctk.CTkLabel(menu,text = "T E L A", fg_color="#FFFFFF", text_color="#000000")
+    tela.grid(row= 2, column = 1, stick = "ew")
+    
     for fila in range(10):
         letra = chr(65 + fila)
         for lugar in range(20):
@@ -129,14 +135,16 @@ def menu_salas():
     menu.pack(side="left", fill="y")
 
     titulo = ctk.CTkLabel(menu, text="sala 1")
-    titulo.grid(row=0, column=0)
+    titulo.grid(row=0, column=0, padx=10, pady=5)
 
     mostrar_sala1()
-
+    
+    
     titulo = ctk.CTkLabel(menu, text="sala 2")
-    titulo.grid(row=0, column=1)
+    titulo.grid(row=0, column=2)
 
     mostrar_sala2()
+
 
 
 # ==========================================

@@ -1,2 +1,5 @@
 .vscode/
 teste.py
+__pycache__/
+Apresentacao_Cinetica.pptx
+generate_presentation.py
