@@ -67,8 +67,9 @@ sala3 = [fila03, fila13, fila23, fila33, fila43, fila53, fila63, fila73, fila83,
 valor_total = 0
 historico = []
 
-datas_filme1 = ["Segunda-Feira", "Quarta-Feira", "Sexta-Feira", "Domingo"]
-datas_filme2 = ["Terça-Feira", "Quinta-Feira", "Sabado"]
+datas_filme1 = ["Segunda-Feira", "Quinta-Feira", "Domingo"]
+datas_filme2 = ["Terça-Feira", "Sexta Feira"]
+datas_filme3 = ["Quarta-Feira", "Sabado"]
 
 # ============================================================
 # banco fudido
@@ -123,12 +124,36 @@ def carregar_banco():
                     sala2[linha][coluna] = 1
                 else:
                     sala2[linha][coluna] = 0
+        
+        # ---------------- SALA 3 ----------------
+        cursor.execute("""
+            SELECT fila, numero, reservado
+            FROM assentos
+            WHERE sala_id = 3
+        """)
+        dados = cursor.fetchall()
+        for fila, numero, reservado in dados:
+            linha = ord(fila.upper()) - 65
+            coluna = numero - 1
+            if 0 <= linha < 10 and 0 <= coluna < 20:
+                if reservado:
+                    sala2[linha][coluna] = 1
+                else:
+                    sala2[linha][coluna] = 0
 
         conexao.commit()
         print("Matrizes carregadas do banco!")
     except Exception as erro:
         print("Erro ao carregar banco:")
         print(erro)
+
+
+        conexao.commit()
+        print("Matrizes carregadas do banco!")
+    except Exception as erro:
+        print("Erro ao carregar banco:")
+        print(erro)
+
 
 # ============================================================
 # banco atualizado
@@ -532,6 +557,8 @@ def mostrar_filme_data(data):
         mostrar_filme1()
     elif data in datas_filme2:
         mostrar_filme2()
+    elif data in datas_filme3:
+        mostrar_filme3()
 
 def menu_calendario():
     for widget in app.winfo_children():
@@ -584,7 +611,7 @@ def menu_principal():
         if widget != menu_lateral:
             widget.destroy()
 
-    titulo = ctk.CTkLabel(app, text="CINETICA", font=("Arial", 40, "bold"))
+    titulo = ctk.CTkLabel(app, text="CineSenai", font=("Arial", 40, "bold"))
     titulo.pack(pady=100)
 
     texto = ctk.CTkLabel(app, text="Sistema de gerenciamento de cinema", font=("Arial", 20))
@@ -615,7 +642,7 @@ ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
 app = ctk.CTk()
-app.title("Cinetica")
+app.title("CineSenai")
 app.geometry("1200x700")
 
 try:
@@ -630,7 +657,7 @@ except:
 menu_lateral = ctk.CTkFrame(app, width=220)
 menu_lateral.pack(side="left", fill="y")
 
-titulo_menu = ctk.CTkLabel(menu_lateral, text="CINETICA", font=("Arial", 25, "bold"))
+titulo_menu = ctk.CTkLabel(menu_lateral, text="Menu Lateral", font=("Arial", 25, "bold"))
 titulo_menu.pack(pady=30)
 
 botao_reserva = ctk.CTkButton(menu_lateral, text="Reservar ingresso", command=mostrar_filmes)
@@ -644,6 +671,9 @@ botao_sala1.pack(padx=20, pady=10)
 
 botao_sala2 = ctk.CTkButton(menu_lateral, text="Ver Sala 2", command=lambda: mostrar_sala(sala2, 2))
 botao_sala2.pack(padx=20, pady=10)
+
+botao_sala3 = ctk.CTkButton(menu_lateral, text="Ver Sala 3", command=lambda: mostrar_sala(sala3, 3))
+botao_sala3.pack(padx=20, pady=10)
 
 botao_calendario = ctk.CTkButton(menu_lateral, text="Calendário", command=menu_calendario)
 botao_calendario.pack(padx=20, pady=10)
