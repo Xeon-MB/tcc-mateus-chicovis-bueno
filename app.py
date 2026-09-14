@@ -69,6 +69,7 @@ conexao = psycopg2.connect(
     username="postgres",
     senha="root"
 )
+
 #nao sei como essa porra ta funfando, mas ta XDDDD
 def carregar_banco():
 

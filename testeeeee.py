@@ -171,51 +171,34 @@ def carregar_banco():
     try:
         # ---------------- SALA 1 ----------------
         cursor.execute("""
-            SELECT fila, numero, reservado
-            FROM assentos
-            WHERE sala_id = 1
+            SELECT fila, numero_cadeira, ocupado
+            FROM assentos_sala_1
         """)
         dados = cursor.fetchall()
-        for fila, numero, reservado in dados:
+        for fila, numero_cadeira, ocupado in dados:
             linha = ord(fila.upper()) - 65
-            coluna = numero - 1
-            if 0 <= linha < 10 and 0 <= coluna < 20:
-                if reservado:
-                    sala1[linha][coluna] = 1
-                else:
-                    sala1[linha][coluna] = 0
+            coluna = numero_cadeira - 1
+
 
         # ---------------- SALA 2 ----------------
         cursor.execute("""
-            SELECT fila, numero, reservado
-            FROM assentos
-            WHERE sala_id = 2
+            SELECT fila, numero_cadeira, ocupado
+            FROM assentos_sala_2
         """)
         dados = cursor.fetchall()
-        for fila, numero, reservado in dados:
+        for fila, numero_cadeira, ocupado in dados:
             linha = ord(fila.upper()) - 65
-            coluna = numero - 1
-            if 0 <= linha < 10 and 0 <= coluna < 20:
-                if reservado:
-                    sala2[linha][coluna] = 1
-                else:
-                    sala2[linha][coluna] = 0
+            coluna = numero_cadeira - 1
         
         # ---------------- SALA 3 ----------------
         cursor.execute("""
-            SELECT fila, numero, reservado
-            FROM assentos
-            WHERE sala_id = 3
+            SELECT fila, numero_cadeira, ocupado
+            FROM assentos_sala_3
         """)
         dados = cursor.fetchall()
-        for fila, numero, reservado in dados:
+        for fila, numero_cadeira, ocupado in dados:
             linha = ord(fila.upper()) - 65
-            coluna = numero - 1
-            if 0 <= linha < 10 and 0 <= coluna < 20:
-                if reservado:
-                    sala2[linha][coluna] = 1
-                else:
-                    sala2[linha][coluna] = 0
+            coluna = numero_cadeira - 1
 
         conexao.commit()
         print("Matrizes carregadas do banco!")
