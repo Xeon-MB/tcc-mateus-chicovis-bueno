@@ -1,10 +1,11 @@
 import subprocess
 import sys
+
 def verificar_e_instalar(pacote):
     try:
         __import__(pacote)
     except ImportError:
-        print(f"Biblioteca '{pacote}' não encontrada. Instalando automaticamente...")
+        print(f"Biblioteca '{pacote}' não encontrada. A instalar automaticamente...")
         subprocess.check_call([sys.executable, "-m", "pip", "install", pacote])
 
 verificar_e_instalar("customtkinter")
@@ -24,7 +25,6 @@ DB_CONFIG = {
     "port": "5432"
 }
 
-# Lista global para armazenar temporariamente os assentos selecionados
 assentos_selecionados = []
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -43,27 +43,25 @@ except:
     pass
 
 # ============================================================
-# FRAMES DE LAYOUT (O SEGREDO PARA NÃO DAR ERRO DE PACK/GRID)
+# FRAMES DE LAYOUT
 # ============================================================
-# Menu na esquerda
-menu_lateral = ctk.CTkFrame(app, width=220)
+# Menu na esquerda com fundo contrastante
+menu_lateral = ctk.CTkFrame(app, width=250, fg_color="#1e1e24")
 menu_lateral.pack(side="left", fill="y")
 
-# Área principal na direita onde tudo vai aparecer
+# Área principal na direita
 main_frame = ctk.CTkFrame(app)
 main_frame.pack(side="right", fill="both", expand=True, padx=20, pady=20)
 
 # ============================================================
-# FUNÇÕES DE BANCO DE DADOS E LÓGICA
+# LÓGICA DE BASE DE DADOS
 # ============================================================
 def buscar_estado_sala(numero_sala):
-    """Busca os assentos ocupados da sala específica e retorna um dicionário."""
     status_assentos = {}
     conn = None
     try:
         conn = psycopg2.connect(**DB_CONFIG)
         cursor = conn.cursor()
-        # Assumindo que tuas tabelas se chamam assentos_sala_1, assentos_sala_2, etc.
         tabela = f"assentos_sala_{numero_sala}" 
         cursor.execute(f"SELECT fila, numero_cadeira, ocupado FROM {tabela};")
         linhas = cursor.fetchall()
@@ -73,7 +71,7 @@ def buscar_estado_sala(numero_sala):
             status_assentos[chave] = ocupado
 
     except Exception as error:
-        print(f"Erro ao consultar o banco de dados: {error}")
+        print(f"Erro ao consultar a base de dados: {error}")
     finally:
         if conn:
             cursor.close()
@@ -81,21 +79,17 @@ def buscar_estado_sala(numero_sala):
     return status_assentos
 
 def alternar_assento(btn):
-    """Muda a cor do botão ao clicar e adiciona/remove da lista."""
     global assentos_selecionados
-    
-    # No CustomTkinter usa-se cget() para pegar propriedades e configure() para alterar
     cor_atual = btn.cget("fg_color")
     
-    if cor_atual == "#ffffff": # Se está branco (livre)
-        btn.configure(fg_color="#4CAF50", text_color="white") # Fica verde
+    if cor_atual == "#ffffff":
+        btn.configure(fg_color="#4CAF50", text_color="white")
         assentos_selecionados.append(btn.cget("text"))
-    else: # Se já está verde
-        btn.configure(fg_color="#ffffff", text_color="black") # Volta a ficar branco
+    else:
+        btn.configure(fg_color="#ffffff", text_color="black")
         assentos_selecionados.remove(btn.cget("text"))
 
 def confirmar_reserva(numero_sala):
-    """Salva os assentos selecionados no banco de dados."""
     global assentos_selecionados
     if not assentos_selecionados:
         print("Nenhum assento selecionado!")
@@ -109,14 +103,13 @@ def confirmar_reserva(numero_sala):
 
         for assento in assentos_selecionados:
             letra = assento[0]
-            numero = assento[1:] # Pega do segundo caractere em diante (caso seja 'A10')
+            numero = assento[1:]
             query = f"UPDATE {tabela} SET ocupado = true WHERE fila = %s AND numero_cadeira = %s;"
             cursor.execute(query, (letra, numero))
         
         conn.commit()
         print(f"Reserva concluída na Sala {numero_sala}: {assentos_selecionados}")
         
-        # Limpa a lista de seleções e recarrega a tela
         assentos_selecionados.clear()
         mostrar_tela_sala(numero_sala)
 
@@ -130,23 +123,77 @@ def confirmar_reserva(numero_sala):
             conn.close()
 
 # ============================================================
-# FUNÇÕES DE INTERFACE (DESENHAR A SALA)
+# GESTÃO DAS VISTAS (INTERFACE)
 # ============================================================
 def limpar_tela_principal():
-    """Destrói todos os widgets dentro do main_frame antes de desenhar outra coisa."""
     global assentos_selecionados
-    assentos_selecionados.clear() # Limpa as seleções pendentes se trocar de sala
+    assentos_selecionados.clear()
     for widget in main_frame.winfo_children():
         widget.destroy()
 
+def mostrar_tela_inicial():
+    limpar_tela_principal()
+    
+    boas_vindas = ctk.CTkLabel(
+        main_frame, 
+        text="Bem-vindo ao CineSenai", 
+        font=("Arial", 42, "bold"),
+        text_color="#4CAF50"
+    )
+    boas_vindas.pack(pady=(150, 20))
+    
+    subtitulo = ctk.CTkLabel(
+        main_frame, 
+        text="Sistema de Gestão de Reservas e Bilheteira", 
+        font=("Arial", 22)
+    )
+    subtitulo.pack(pady=10)
+
+def criar_card_filme(container, nome, duracao, sala, caminho_img, coluna):
+    """Função modular para gerar os cartazes sem repetir código"""
+    frame_card = ctk.CTkFrame(container, fg_color="transparent")
+    frame_card.grid(row=0, column=coluna, padx=40)
+
+    try:
+        img = Image.open(caminho_img)
+    except FileNotFoundError:
+        # Salvaguarda: se a imagem faltar, cria um bloco cinzento provisório
+        img = Image.new('RGB', (200, 300), color='#2b2b36')
+
+    ctk_img = ctk.CTkImage(light_image=img, dark_image=img, size=(200, 300))
+
+    # O botão da imagem agora encaminha diretamente para a sala do filme
+    btn_img = ctk.CTkButton(
+        frame_card, text="", image=ctk_img, width=200, height=300, 
+        fg_color="transparent", hover_color="#3a3a48", 
+        command=lambda: mostrar_tela_sala(sala)
+    )
+    btn_img.pack()
+
+    ctk.CTkLabel(frame_card, text=nome, font=("Arial", 18, "bold")).pack(pady=(15, 5))
+    ctk.CTkLabel(frame_card, text=f"Duração: {duracao}", font=("Arial", 15)).pack()
+    ctk.CTkLabel(frame_card, text=f"SALA: {sala}", font=("Arial", 15, "bold"), text_color="#3498db").pack()
+
+def ver_filmes():
+    limpar_tela_principal()
+
+    titulo = ctk.CTkLabel(main_frame, text="Filmes em Cartaz", font=("Arial", 32, "bold"))
+    titulo.pack(pady=40)
+
+    # Contentor seguro para usar GRID sem entrar em conflito com o PACK principal
+    container_filmes = ctk.CTkFrame(main_frame, fg_color="transparent")
+    container_filmes.pack(pady=20)
+
+    criar_card_filme(container_filmes, "A Odisseia", "2H52M", 1, BASE_DIR / "odisseia.png", 0)
+    criar_card_filme(container_filmes, "Homem Aranha 3", "2H19M", 2, BASE_DIR / "homemaranha3.png", 1)
+    criar_card_filme(container_filmes, "Barbie em Vida de Sereia", "1H15M", 3, BASE_DIR / "barbie.png", 2)
+
 def mostrar_tela_sala(numero_sala):
-    """Constrói a grade de botões dentro do main_frame para a sala escolhida."""
     limpar_tela_principal()
 
     titulo = ctk.CTkLabel(main_frame, text=f"SALA {numero_sala}", font=("Arial", 28, "bold"))
     titulo.pack(pady=20)
 
-    # Frame interno só para os botões da grade, usando pack no main_frame e grid internamente
     grade_frame = ctk.CTkFrame(main_frame)
     grade_frame.pack(pady=10)
 
@@ -161,15 +208,14 @@ def mostrar_tela_sala(numero_sala):
             esta_ocupado = status_no_banco.get(nome_assento, False)
 
             if esta_ocupado:
-                cor_fundo = "#f44336" # Vermelho
+                cor_fundo = "#f44336"
                 cor_texto = "white"
                 estado_botao = "disabled"
             else:
-                cor_fundo = "#ffffff" # Branco
+                cor_fundo = "#ffffff"
                 cor_texto = "black"
                 estado_botao = "normal"
 
-            # Sintaxe corrigida do CustomTkinter
             btn = ctk.CTkButton(
                 grade_frame,
                 text=nome_assento,
@@ -185,94 +231,63 @@ def mostrar_tela_sala(numero_sala):
             if estado_botao == "normal":
                 btn.configure(command=lambda b=btn: alternar_assento(b))
             
-            # Aqui usamos o grid dentro do grade_frame, não entra em conflito com pack!
             btn.grid(row=r_idx, column=c_idx, padx=5, pady=5)
 
     btn_reservar = ctk.CTkButton(
         main_frame,
         text='Confirmar Reserva',
-        height=40,
-        font=("Arial", 14, "bold"),
+        height=45,
+        font=("Arial", 15, "bold"),
         fg_color="#0d761f",
-        text_color="black",
+        hover_color="#095415",
+        text_color="white",
         command=lambda: confirmar_reserva(numero_sala)
     )
     btn_reservar.pack(pady=30)
 
 
-def ver_filmes():
-    limpar_tela_principal()
-
-    caminho_imagem1 = BASE_DIR / "odisseia.png"
-    image1 = ctk.CTkImage(light_image=Image.open(caminho_imagem1), dark_image=Image.open(caminho_imagem1), size=(200, 300))
-
-    filme1 = ctk.CTkButton(main_frame, text="", image=image1, width=200, height=300, fg_color="transparent")
-    filme1.grid(row=0, column=0, padx=10)
-
-    nome_filme1 = ctk.CTkLabel(main_frame, text="A Odisseia", font=("Arial", 15, "bold"))
-    nome_filme1.grid(row=1, column=0, padx=10)
-
-    duracao_filme1 = ctk.CTkLabel(main_frame, text="Duração: 2H52M", font=("Arial", 15))
-    duracao_filme1.grid(row=2, column=0, padx=10)
-
-    sala_filme1 = ctk.CTkLabel(main_frame, text="SALA: 1", font=("Arial", 15))
-    sala_filme1.grid(row=3, column=0, padx=10)
-
-    caminho_imagem2 = BASE_DIR / "homemaranha3.png"
-    image2 = ctk.CTkImage(light_image=Image.open(caminho_imagem2), dark_image=Image.open(caminho_imagem2), size=(200, 300))
-
-    filme2 = ctk.CTkButton(main_frame, text="", image=image2, width=200, height=300, fg_color="transparent")
-    filme2.grid(row=0, column=1, padx=10)
-
-    nome_filme2 = ctk.CTkLabel(main_frame, text="Homem Aranha 3", font=("Arial", 15, "bold"))
-    nome_filme2.grid(row=1, column=1, padx=10)
-
-    duracao_filme2 = ctk.CTkLabel(main_frame, text="Duração: 2H19M", font=("Arial", 15))
-    duracao_filme2.grid(row=2, column=1, padx=10)
-
-    sala_filme2 = ctk.CTkLabel(main_frame, text="SALA: 2", font=("Arial", 15))
-    sala_filme2.grid(row=3, column=1, padx=10)
-
-    caminho_imagem3 = BASE_DIR / "barbie.png"
-    image3 = ctk.CTkImage(light_image=Image.open(caminho_imagem3), dark_image=Image.open(caminho_imagem3), size=(200, 300))
-
-    filme1 = ctk.CTkButton(main_frame, text="", image=image3, width=200, height=300, fg_color="transparent")
-    filme1.grid(row=0, column=2, padx=10)
-
-    nome_filme1 = ctk.CTkLabel(main_frame, text="Barbie em Vida de Sereia", font=("Arial", 15, "bold"))
-    nome_filme1.grid(row=1, column=2, padx=10)
-
-    duracao_filme1 = ctk.CTkLabel(main_frame, text="Duração: 1H515M", font=("Arial", 15))
-    duracao_filme1.grid(row=2, column=2, padx=10)
-
-    sala_filme1 = ctk.CTkLabel(main_frame, text="SALA: 3", font=("Arial", 15))
-    sala_filme1.grid(row=3, column=2, padx=10)
 # ============================================================
-# BOTÕES DO MENU LATERAL
+# BOTÕES DO MENU LATERAL (ESTILO PREMIUM)
 # ============================================================
-titulo_menu = ctk.CTkLabel(menu_lateral, text="CineSenai", font=("Arial", 25, "bold"))
-titulo_menu.pack(pady=30)
+titulo_menu = ctk.CTkLabel(menu_lateral, text="CineSenai", font=("Arial", 28, "bold"))
+titulo_menu.pack(pady=(30, 40))
 
-filmes = ctk.CTkButton(menu_lateral, text="Ver Filmes em Cartaz", command=ver_filmes)
-filmes.pack(padx=20, pady=10)
+def criar_botao_menu(texto, comando):
+    btn = ctk.CTkButton(
+        menu_lateral, 
+        text=texto, 
+        command=comando,
+        fg_color="transparent",
+        hover_color="#2b2b36",
+        text_color="white",
+        font=("Arial", 16),
+        anchor="w",
+        height=45
+    )
+    btn.pack(fill="x", padx=15, pady=5)
+    return btn
 
-botao_sala1 = ctk.CTkButton(menu_lateral, text="Ver Sala 1", command=lambda: mostrar_tela_sala(1))
-botao_sala1.pack(padx=20, pady=10)
+btn_inicio = criar_botao_menu("Início", mostrar_tela_inicial)
+btn_filmes = criar_botao_menu("Filmes em Cartaz", ver_filmes)
+btn_sala1 = criar_botao_menu("Ver Sala 1", lambda: mostrar_tela_sala(1))
+btn_sala2 = criar_botao_menu("Ver Sala 2", lambda: mostrar_tela_sala(2))
+btn_sala3 = criar_botao_menu("Ver Sala 3", lambda: mostrar_tela_sala(3))
+btn_calendario = criar_botao_menu("Calendário", lambda: print("Carregar calendário"))
+btn_historico = criar_botao_menu("Histórico", lambda: print("Carregar histórico"))
 
-botao_sala2 = ctk.CTkButton(menu_lateral, text="Ver Sala 2", command=lambda: mostrar_tela_sala(2))
-botao_sala2.pack(padx=20, pady=10)
+botao_sair = ctk.CTkButton(
+    menu_lateral, 
+    text="Sair", 
+    fg_color="#c92a2a", 
+    hover_color="#911f1f", 
+    command=app.destroy,
+    font=("Arial", 15, "bold"),
+    height=45
+)
+botao_sair.pack(fill="x", padx=20, pady=30, side="bottom")
 
-botao_sala3 = ctk.CTkButton(menu_lateral, text="Ver Sala 3", command=lambda: mostrar_tela_sala(3))
-botao_sala3.pack(padx=20, pady=10)
-
-calendario = ctk.CTkButton(menu_lateral, text="Calendário")
-calendario.pack(padx=20, pady=10)
-
-historico = ctk.CTkButton(menu_lateral, text="Histórico")
-historico.pack(padx=20, pady=10)
-
-
-botao_sair = ctk.CTkButton(menu_lateral, text="Sair", fg_color="red", hover_color="darkred", command=app.destroy)
-botao_sair.pack(padx=20, pady=30, side="bottom")
-
+# ============================================================
+# INICIALIZAÇÃO
+# ============================================================
+mostrar_tela_inicial()
 app.mainloop()
