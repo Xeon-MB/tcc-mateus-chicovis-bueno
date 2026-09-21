@@ -1,5 +1,20 @@
+import subprocess
+import sys
+def verificar_e_instalar(pacote):
+    try:
+        __import__(pacote)
+    except ImportError:
+        print(f"Biblioteca '{pacote}' não encontrada. Instalando automaticamente...")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", pacote])
+
+verificar_e_instalar("customtkinter")
+verificar_e_instalar("pillow")
+verificar_e_instalar("psycopg2")
+
 import customtkinter as ctk
 import psycopg2
+from PIL import Image
+from pathlib import Path
 
 DB_CONFIG = {
     "dbname": "wow",
@@ -11,6 +26,7 @@ DB_CONFIG = {
 
 # Lista global para armazenar temporariamente os assentos selecionados
 assentos_selecionados = []
+BASE_DIR = Path(__file__).resolve().parent
 
 # ============================================================
 # JANELA PRINCIPAL
@@ -20,7 +36,7 @@ ctk.set_default_color_theme("blue")
 
 app = ctk.CTk()
 app.title("CineSenai")
-app.geometry("1200x700")
+app.geometry("1920x1080")
 try:
     app.state("zoomed")
 except:
@@ -184,11 +200,61 @@ def mostrar_tela_sala(numero_sala):
     btn_reservar.pack(pady=30)
 
 
+def ver_filmes():
+    limpar_tela_principal()
+
+    caminho_imagem1 = BASE_DIR / "odisseia.png"
+    image1 = ctk.CTkImage(light_image=Image.open(caminho_imagem1), dark_image=Image.open(caminho_imagem1), size=(200, 300))
+
+    filme1 = ctk.CTkButton(main_frame, text="", image=image1, width=200, height=300, fg_color="transparent")
+    filme1.grid(row=0, column=0, padx=10)
+
+    nome_filme1 = ctk.CTkLabel(main_frame, text="A Odisseia", font=("Arial", 15, "bold"))
+    nome_filme1.grid(row=1, column=0, padx=10)
+
+    duracao_filme1 = ctk.CTkLabel(main_frame, text="Duração: 2H52M", font=("Arial", 15))
+    duracao_filme1.grid(row=2, column=0, padx=10)
+
+    sala_filme1 = ctk.CTkLabel(main_frame, text="SALA: 1", font=("Arial", 15))
+    sala_filme1.grid(row=3, column=0, padx=10)
+
+    caminho_imagem2 = BASE_DIR / "homemaranha3.png"
+    image2 = ctk.CTkImage(light_image=Image.open(caminho_imagem2), dark_image=Image.open(caminho_imagem2), size=(200, 300))
+
+    filme2 = ctk.CTkButton(main_frame, text="", image=image2, width=200, height=300, fg_color="transparent")
+    filme2.grid(row=0, column=1, padx=10)
+
+    nome_filme2 = ctk.CTkLabel(main_frame, text="Homem Aranha 3", font=("Arial", 15, "bold"))
+    nome_filme2.grid(row=1, column=1, padx=10)
+
+    duracao_filme2 = ctk.CTkLabel(main_frame, text="Duração: 2H19M", font=("Arial", 15))
+    duracao_filme2.grid(row=2, column=1, padx=10)
+
+    sala_filme2 = ctk.CTkLabel(main_frame, text="SALA: 2", font=("Arial", 15))
+    sala_filme2.grid(row=3, column=1, padx=10)
+
+    caminho_imagem3 = BASE_DIR / "barbie.png"
+    image3 = ctk.CTkImage(light_image=Image.open(caminho_imagem3), dark_image=Image.open(caminho_imagem3), size=(200, 300))
+
+    filme1 = ctk.CTkButton(main_frame, text="", image=image3, width=200, height=300, fg_color="transparent")
+    filme1.grid(row=0, column=2, padx=10)
+
+    nome_filme1 = ctk.CTkLabel(main_frame, text="Barbie em Vida de Sereia", font=("Arial", 15, "bold"))
+    nome_filme1.grid(row=1, column=2, padx=10)
+
+    duracao_filme1 = ctk.CTkLabel(main_frame, text="Duração: 1H515M", font=("Arial", 15))
+    duracao_filme1.grid(row=2, column=2, padx=10)
+
+    sala_filme1 = ctk.CTkLabel(main_frame, text="SALA: 3", font=("Arial", 15))
+    sala_filme1.grid(row=3, column=2, padx=10)
 # ============================================================
 # BOTÕES DO MENU LATERAL
 # ============================================================
 titulo_menu = ctk.CTkLabel(menu_lateral, text="CineSenai", font=("Arial", 25, "bold"))
 titulo_menu.pack(pady=30)
+
+filmes = ctk.CTkButton(menu_lateral, text="Ver Filmes em Cartaz", command=ver_filmes)
+filmes.pack(padx=20, pady=10)
 
 botao_sala1 = ctk.CTkButton(menu_lateral, text="Ver Sala 1", command=lambda: mostrar_tela_sala(1))
 botao_sala1.pack(padx=20, pady=10)
@@ -198,6 +264,13 @@ botao_sala2.pack(padx=20, pady=10)
 
 botao_sala3 = ctk.CTkButton(menu_lateral, text="Ver Sala 3", command=lambda: mostrar_tela_sala(3))
 botao_sala3.pack(padx=20, pady=10)
+
+calendario = ctk.CTkButton(menu_lateral, text="Calendário")
+calendario.pack(padx=20, pady=10)
+
+historico = ctk.CTkButton(menu_lateral, text="Histórico")
+historico.pack(padx=20, pady=10)
+
 
 botao_sair = ctk.CTkButton(menu_lateral, text="Sair", fg_color="red", hover_color="darkred", command=app.destroy)
 botao_sair.pack(padx=20, pady=30, side="bottom")
