@@ -19,10 +19,13 @@ def verificar_e_instalar(pacote_import, pacote_pip=None):
         ])
 
 
-# psycopg2-binary costuma ser mais simples de instalar no Windows
+
+# baixar os bagual
 verificar_e_instalar("psycopg2", "psycopg2-binary")
+verificar_e_instalar("customtkinter")
 
 import psycopg2
+import customtkinter as ctk
 
 
 # ============================================================

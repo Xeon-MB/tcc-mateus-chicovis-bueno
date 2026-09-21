@@ -36,6 +36,9 @@ datas_filme1 = ["Segunda-Feira", "Quinta-Feira", "Domingo"]
 datas_filme2 = ["Terça-Feira", "Sexta Feira"]
 datas_filme3 = ["Quarta-Feira", "Sabado"]
 
+sala1 = [[0 for _ in range(20)] for _ in range(10)]
+sala2 = [[0 for _ in range(20)] for _ in range(10)]
+sala3 = [[0 for _ in range(20)] for _ in range(10)]
 # ============================================================
 # banco fudido
 # ============================================================
@@ -52,114 +55,6 @@ DB_CONFIG = {
 conexao = None
 cursor = None
 
-try:
-    # Conecta ao PostgreSQL
-    conexao = psycopg2.connect(**DB_CONFIG)
-    cursor = conexao.cursor()
-
-    print("Conectado ao PostgreSQL com sucesso!")
-
-    # ========================================================
-    # SALA 1
-    # ========================================================
-
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS assentos_sala_1 (
-            id SERIAL PRIMARY KEY,
-            fila CHAR(1) NOT NULL,
-            numero_cadeira INT NOT NULL,
-            ocupado BOOLEAN DEFAULT FALSE NOT NULL
-        )
-    """)
-
-    dados_assentos = []
-
-    for coluna in colunas:
-        for linha in linhas:
-            dados_assentos.append(
-                (coluna, linha, False)
-            )
-
-    cursor.executemany("""
-        INSERT INTO assentos_sala_1
-        (fila, numero_cadeira, ocupado)
-        VALUES (%s, %s, %s)
-    """, dados_assentos)
-
-    print(f"Sala 1: {len(dados_assentos)} assentos cadastrados!")
-
-
-    # ========================================================
-    # SALA 2
-    # ========================================================
-
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS assentos_sala_2 (
-            id SERIAL PRIMARY KEY,
-            fila CHAR(1) NOT NULL,
-            numero_cadeira INT NOT NULL,
-            ocupado BOOLEAN DEFAULT FALSE NOT NULL
-        )
-    """)
-
-    cursor.executemany("""
-        INSERT INTO assentos_sala_2
-        (fila, numero_cadeira, ocupado)
-        VALUES (%s, %s, %s)
-    """, dados_assentos)
-
-    print(f"Sala 2: {len(dados_assentos)} assentos cadastrados!")
-
-
-    # ========================================================
-    # SALA 3
-    # ========================================================
-
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS assentos_sala_3 (
-            id SERIAL PRIMARY KEY,
-            fila CHAR(1) NOT NULL,
-            numero_cadeira INT NOT NULL,
-            ocupado BOOLEAN DEFAULT FALSE NOT NULL
-        )
-    """)
-
-    cursor.executemany("""
-        INSERT INTO assentos_sala_3
-        (fila, numero_cadeira, ocupado)
-        VALUES (%s, %s, %s)
-    """, dados_assentos)
-
-    print(f"Sala 3: {len(dados_assentos)} assentos cadastrados!")
-
-
-    # ========================================================
-    # SALVA AS ALTERAÇÕES
-    # ========================================================
-
-    conexao.commit()
-
-    print("\nTudo certo!")
-    print(f"Total de assentos cadastrados: {len(dados_assentos) * 3}")
-
-
-except Exception as e:
-    print(f"\nDeu erro: {e}")
-
-    if conexao is not None:
-        conexao.rollback()
-
-
-finally:
-    # Fecha cursor e conexão
-    if cursor is not None:
-        cursor.close()
-
-    if conexao is not None:
-        conexao.close()
-
-    print("Conexão encerrada.")
-
 
 # ============================================================
 # CARREGAR RESERVAS DO BANCO PARA AS MATRIZES
@@ -169,36 +64,22 @@ def carregar_banco():
     if cursor is None:
         return
     try:
-        # ---------------- SALA 1 ----------------
-        cursor.execute("""
-            SELECT fila, numero_cadeira, ocupado
-            FROM assentos_sala_1
-        """)
-        dados = cursor.fetchall()
-        for fila, numero_cadeira, ocupado in dados:
-            linha = ord(fila.upper()) - 65
-            coluna = numero_cadeira - 1
+        def carregar_sala(nome_tabela, matriz_sala):
+            cursor.execute(f"SELECT fila, numero_cadeira, ocupado FROM {nome_tabela}")
+            dados = cursor.fetchall()
+            for fila, numero_cadeira, ocupado in dados:
+                linha = ord(fila.upper()) - 65
+                coluna = numero_cadeira - 1
+                # Se ocupado for True no PostgreSQL, marca como 1 na matriz visual
+                matriz_sala[linha][coluna] = 1 if ocupado else 0
 
+        carregar_sala("assentos_sala_1", sala1)
+        carregar_sala("assentos_sala_2", sala2)
+        carregar_sala("assentos_sala_3", sala3)
 
-        # ---------------- SALA 2 ----------------
-        cursor.execute("""
-            SELECT fila, numero_cadeira, ocupado
-            FROM assentos_sala_2
-        """)
-        dados = cursor.fetchall()
-        for fila, numero_cadeira, ocupado in dados:
-            linha = ord(fila.upper()) - 65
-            coluna = numero_cadeira - 1
-        
-        # ---------------- SALA 3 ----------------
-        cursor.execute("""
-            SELECT fila, numero_cadeira, ocupado
-            FROM assentos_sala_3
-        """)
-        dados = cursor.fetchall()
-        for fila, numero_cadeira, ocupado in dados:
-            linha = ord(fila.upper()) - 65
-            coluna = numero_cadeira - 1
+        print("Matrizes carregadas e sincronizadas com a base de dados!")
+    except Exception as erro:
+        print(f"Erro fatal ao carregar banco: {erro}")
 
         conexao.commit()
         print("Matrizes carregadas do banco!")
@@ -218,115 +99,74 @@ def carregar_banco():
 # banco atualizado
 # ============================================================
 
-def salvar_reserva_banco(sala, fila, lugar):
+# ============================================================
+# BANCO ATUALIZADO - SALVAR RESERVA
+# ============================================================
+
+def salvar_reserva_banco(sala, fila_index, lugar_index):
     if cursor is None:
         return False
     try:
-        if sala is sala1:
-            sala_id = 1
-            filme_id = 1
-        else:
-            sala_id = 2
-            filme_id = 2
+        # Descobre qual tabela usar dependendo da matriz que chamou a função
+        tabela = "assentos_sala_1" if sala is sala1 else ("assentos_sala_2" if sala is sala2 else "assentos_sala_3")
+        
+        letra_fila = chr(65 + fila_index)
+        numero_cadeira = lugar_index + 1
 
-        letra = chr(65 + fila)
-        numero = lugar + 1
-
-        cursor.execute("""
-            SELECT id, reservado
-            FROM assentos
-            WHERE sala_id = %s
-            AND fila = %s
-            AND numero = %s
-        """, (sala_id, letra, numero))
-
+        # Verifica o estado atual diretamente na tabela da sala específica
+        cursor.execute(f"""
+            SELECT ocupado FROM {tabela}
+            WHERE fila = %s AND numero_cadeira = %s
+        """, (letra_fila, numero_cadeira))
+        
         assento = cursor.fetchone()
-        if assento is None:
-            print("Assento não encontrado no banco.")
-            conexao.rollback()
+        
+        if assento is None or assento[0] == True:
+            print("Assento já reservado ou inexistente.")
             return False
 
-        assento_id = assento[0]
-        reservado = assento[1]
-
-        if reservado:
-            print("Esse assento já está reservado no banco.")
-            conexao.rollback()
-            return False
-
-        cursor.execute("""
-            UPDATE assentos
-            SET reservado = TRUE
-            WHERE id = %s
-        """, (assento_id,))
-
-        cursor.execute("""
-            INSERT INTO reservas
-            (filme_id, assento_id, preco)
-            VALUES (%s, %s, %s)
-        """, (filme_id, assento_id, 25.00))
+        # Marca como ocupado
+        cursor.execute(f"""
+            UPDATE {tabela}
+            SET ocupado = TRUE
+            WHERE fila = %s AND numero_cadeira = %s
+        """, (letra_fila, numero_cadeira))
 
         conexao.commit()
         return True
     except Exception as erro:
-        print("Erro ao salvar reserva:")
-        print(erro)
+        print(f"Erro SQL ao salvar reserva: {erro}")
         conexao.rollback()
-        return False
+        return False, erro
 
 # ============================================================
 # banco CANCELAMENTOXDDD
 # ============================================================
-
-def cancelar_banco(sala, fila, lugar):
+def cancelar_banco(sala, fila_index, lugar_index):
     if cursor is None:
         return False
     try:
-        if sala is sala1:
-            sala_id = 1
-        else:
-            sala_id = 2
+        tabela = "assentos_sala_1" if sala is sala1 else ("assentos_sala_2" if sala is sala2 else "assentos_sala_3")
+        
+        letra_fila = chr(65 + fila_index)
+        numero_cadeira = lugar_index + 1
 
-        letra = chr(65 + fila)
-        numero = lugar + 1
-
-        cursor.execute("""
-            SELECT id
-            FROM assentos
-            WHERE sala_id = %s
-            AND fila = %s
-            AND numero = %s
-        """, (sala_id, letra, numero))
-
-        assento = cursor.fetchone()
-        if assento is None:
-            print("Assento não encontrado.")
-            conexao.rollback()
-            return False
-
-        assento_id = assento[0]
-
-        cursor.execute("""
-            UPDATE assentos
-            SET reservado = FALSE
-            WHERE id = %s
-        """, (assento_id,))
-
-        cursor.execute("""
-            DELETE FROM reservas
-            WHERE assento_id = %s
-        """, (assento_id,))
+        cursor.execute(f"""
+            UPDATE {tabela}
+            SET ocupado = FALSE
+            WHERE fila = %s AND numero_cadeira = %s
+        """, (letra_fila, numero_cadeira))
 
         conexao.commit()
         return True
     except Exception as erro:
-        print("Erro ao cancelar reserva:")
-        print(erro)
+        print(f"Erro SQL ao cancelar reserva: {erro}")
         conexao.rollback()
         return False
 
+
 # ============================================================
-# mostrar sala
+# MOSTRAR SALA E PERMITIR RESERVA
 # ============================================================
 
 def mostrar_sala(sala, numero_sala):
@@ -346,83 +186,60 @@ def mostrar_sala(sala, numero_sala):
     assentos_frame = ctk.CTkFrame(frame)
     assentos_frame.pack(pady=20)
 
-    for fila in range(10):
-        letra = chr(65 + fila)
+    for fila_index in range(10):
+        letra = chr(65 + fila_index)
         label_fila = ctk.CTkLabel(assentos_frame, text=letra, width=30)
-        label_fila.grid(row=fila, column=0, padx=5, pady=5)
+        label_fila.grid(row=fila_index, column=0, padx=5, pady=5)
 
-        for lugar in range(20):
-            if sala[fila][lugar] == 0:
-                texto = f"{letra}{lugar + 1}"
+        for lugar_index in range(20):
+            # Se o estado na matriz for 0 (Livre)
+            if sala[fila_index][lugar_index] == 0:
+                texto = f"{letra}{lugar_index + 1}"
+                # Cria o botão verde e ATIVO, passando os dados para fazer_reserva
+                botao = ctk.CTkButton(assentos_frame, text=texto, width=45, height=35, fg_color="green")
+                # O lambda "congela" os valores de fila e lugar para aquele botão específico
+                botao.configure(command=lambda s=sala, f=fila_index, l=lugar_index, b=botao: fazer_reserva(s, f, l, b, numero_sala))
+            
+            # Se o estado na matriz for 1 (Ocupado)
             else:
                 texto = "X"
+                # Cria o botão vermelho e DESATIVADO
+                botao = ctk.CTkButton(assentos_frame, text=texto, width=45, height=35, fg_color="red", state="disabled")
 
-            botao = ctk.CTkButton(assentos_frame, text=texto, width=45, height=35, state="disabled")
-            botao.grid(row=fila, column=lugar + 1, padx=2, pady=2)
+            botao.grid(row=fila_index, column=lugar_index + 1, padx=2, pady=2)
 
-            if sala[fila][lugar] == 1:
-                botao.configure(fg_color="red")
-            else:
-                botao.configure(fg_color="green")
 
-# ============================================================
-# RESERVA
-# ============================================================
-
-def reserva(sala, filme_id):
-    for widget in app.winfo_children():
-        if widget != menu_lateral:
-            widget.destroy()
-
-    frame = ctk.CTkFrame(app)
-    frame.pack(fill="both", expand=True, padx=20, pady=20)
-
-    titulo = ctk.CTkLabel(frame, text="ESCOLHA SEU ASSENTO", font=("Arial", 28, "bold"))
-    titulo.pack(pady=20)
-
-    tela = ctk.CTkLabel(frame, text="================ TELA ================", font=("Arial", 18))
-    tela.pack(pady=10)
-
-    assentos_frame = ctk.CTkFrame(frame)
-    assentos_frame.pack(pady=20)
-
-    for fila in range(10):
-        letra = chr(65 + fila)
-        label_fila = ctk.CTkLabel(assentos_frame, text=letra, width=30)
-        label_fila.grid(row=fila, column=0, padx=5, pady=5)
-
-        for lugar in range(20):
-            if sala[fila][lugar] == 0:
-                botao = ctk.CTkButton(assentos_frame, text=f"{letra}{lugar + 1}", width=45, height=35, fg_color="green")
-                botao.configure(command=lambda s=sala, f=fila, l=lugar, b=botao: fazer_reserva(s, f, l, b, filme_id))
-            else:
-                botao = ctk.CTkButton(assentos_frame, text="X", width=45, height=35, fg_color="red", state="disabled")
-
-            botao.grid(row=fila, column=lugar + 1, padx=2, pady=2)
-
-    voltar = ctk.CTkButton(frame, text="Voltar", command=menu_principal)
-    voltar.pack(pady=20)
 
 # ============================================================
 # FAZER RESERVA
 # ============================================================
 
-def fazer_reserva(sala, fila, lugar, botao, filme_id):
+def fazer_reserva(sala, fila_index, lugar_index, botao, numero_sala):
     global valor_total
-    if sala[fila][lugar] == 1:
+
+    # Se o assento já estiver marcado como 1 na matriz, ignora o clique
+    if sala[fila_index][lugar_index] == 1:
         return
 
-    sucesso = salvar_reserva_banco(sala, fila, lugar)
+    # Tenta salvar no banco de dados PRIMEIRO
+    sucesso = salvar_reserva_banco(sala, fila_index, lugar_index)
+    
     if sucesso:
-        sala[fila][lugar] = 1
+        # Se o PostgreSQL confirmou a gravação, atualizamos a interface gráfica
+        sala[fila_index][lugar_index] = 1
         valor_total += 25
-        letra = chr(65 + fila)
-        numero = lugar + 1
-        historico.append(f"Reserva: Sala {1 if sala is sala1 else 2} - Assento {letra}{numero} - R$ 25,00")
+        
+        letra = chr(65 + fila_index)
+        numero = lugar_index + 1
+        
+        # Adiciona a ação ao histórico
+        historico.append(f"Reserva: Sala {numero_sala} - Assento {letra}{numero} - R$ 25,00")
+        
+        # Muda a cor do botão para vermelho e desativa o clique
         botao.configure(text="X", fg_color="red", state="disabled")
-        print(f"Assento {letra}{numero} reservado!")
+        print(f"Assento {letra}{numero} reservado com sucesso na Sala {numero_sala}!")
     else:
-        print("Não foi possível realizar a reserva.")
+        print("Erro: Não foi possível confirmar a reserva na base de dados.")
 
 # ============================================================
 # FILME 1
@@ -442,7 +259,7 @@ def mostrar_filme1():
     informacoes = ctk.CTkLabel(frame, text="Duração: 2H52M\nSala: 1", font=("Arial", 20))
     informacoes.pack(pady=10)
 
-    botao = ctk.CTkButton(frame, text="ESCOLHER ASSENTO", width=250, height=50, command=lambda: reserva(sala1, 1))
+    botao = ctk.CTkButton(frame, text="ESCOLHER ASSENTO", width=250, height=50)
     botao.pack(pady=30)
 
     voltar = ctk.CTkButton(frame, text="Voltar", command=mostrar_filmes)
@@ -466,7 +283,7 @@ def mostrar_filme2():
     informacoes = ctk.CTkLabel(frame, text="Duração: 2H19M\nSala: 2", font=("Arial", 20))
     informacoes.pack(pady=10)
 
-    botao = ctk.CTkButton(frame, text="ESCOLHER ASSENTO", width=250, height=50, command=lambda: reserva(sala2, 2))
+    botao = ctk.CTkButton(frame, text="ESCOLHER ASSENTO", width=250, height=50)
     botao.pack(pady=30)
 
     voltar = ctk.CTkButton(frame, text="Voltar", command=mostrar_filmes)
@@ -490,7 +307,7 @@ def mostrar_filme3():
     informacoes = ctk.CTkLabel(frame, text="Duração: 1H15M\nSala: 3", font=("Arial", 20))
     informacoes.pack(pady=10)
 
-    botao = ctk.CTkButton(frame, text="ESCOLHER ASSENTO", width=250, height=50, command=lambda: reserva(sala3, 3))
+    botao = ctk.CTkButton(frame, text="ESCOLHER ASSENTO", width=250, height=50)
     botao.pack(pady=30)
 
     voltar = ctk.CTkButton(frame, text="Voltar", command=mostrar_filmes)
