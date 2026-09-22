@@ -45,8 +45,8 @@ except:
 #=============================================================
 #calendario fudido
 #=============================================================
-#def ver_calendario():
-
+def ver_calendario():
+    print("data")#algum tem que fazer ne s2s2s2s2xoxo:3
     
 
 
@@ -112,7 +112,7 @@ def confirmar_reserva(numero_sala):
         for assento in assentos_selecionados:
             letra = assento[0]
             numero = assento[1:]
-            query = f"UPDATE {tabela} SET ocupado = true WHERE fila = %s AND numero_cadeira = %s;"
+            query = f"UPDATE {tabela} SET ocupado = true WHERE fila = %s AND numero_cadeira = %s;"      
             cursor.execute(query, (letra, numero))
             assentos_str = ", ".join(assentos_selecionados) 
         

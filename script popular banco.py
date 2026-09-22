@@ -138,7 +138,7 @@ try:
     print(f"Sala 3: {len(dados_assentos)} assentos cadastrados!")
 
 
-    #=========================================================
+    #========================================================
     #historico do beta
     #========================================================
     
@@ -150,7 +150,17 @@ try:
         )
     """)
 
+    #========================================================
+    #calendario né
+    #========================================================
 
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS calendario(
+            id SERIAL PRIMARY KEY,
+            dia_semana DATE,
+            filme_dia CHAR(255) NOT NULL
+        )
+    """)
 
     # ========================================================
     # SALVA AS ALTERAÇÕES
