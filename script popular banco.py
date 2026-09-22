@@ -135,8 +135,21 @@ try:
         (fila, numero_cadeira, ocupado)
         VALUES (%s, %s, %s)
     """, dados_assentos)
-
     print(f"Sala 3: {len(dados_assentos)} assentos cadastrados!")
+
+
+    #=========================================================
+    #historico do beta
+    #========================================================
+    
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS historico(
+            id SERIAL PRIMARY KEY,
+            movimentacao CHAR(255) NOT NULL
+            
+        )
+    """)
+
 
 
     # ========================================================
