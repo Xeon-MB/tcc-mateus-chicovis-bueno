@@ -42,6 +42,14 @@ try:
 except:
     pass
 
+#=============================================================
+#calendario fudido
+#=============================================================
+#def ver_calendario():
+
+    
+
+
 # ============================================================
 # FRAMES DE LAYOUT
 # ============================================================
@@ -106,12 +114,25 @@ def confirmar_reserva(numero_sala):
             numero = assento[1:]
             query = f"UPDATE {tabela} SET ocupado = true WHERE fila = %s AND numero_cadeira = %s;"
             cursor.execute(query, (letra, numero))
+            assentos_str = ", ".join(assentos_selecionados) 
         
-        conn.commit()
-        print(f"Reserva concluída na Sala {numero_sala}: {assentos_selecionados}")
+        # Monta a frase que vai aparecer na tela de histórico
+            texto_historico = f"Reserva na Sala {numero_sala} - Assentos: {assentos_str}"
         
-        assentos_selecionados.clear()
-        mostrar_tela_sala(numero_sala)
+        # Insere no banco uma única vez por reserva (fora do 'for')
+            query2 = "INSERT INTO historico (movimentacao) VALUES (%s);"
+            cursor.execute(query2, (texto_historico,))
+        
+        # Confirma as alterações no banco
+            conn.commit()
+            print(f"Reserva concluída na Sala {numero_sala}: {assentos_selecionados}")
+        
+            assentos_selecionados.clear()
+            mostrar_tela_sala(numero_sala)
+            print(f"Reserva concluída na Sala {numero_sala}: {assentos_selecionados}")
+        
+            assentos_selecionados.clear()
+            mostrar_tela_sala(numero_sala)
 
     except Exception as error:
         print(f"Erro ao operar no banco: {error}")
@@ -173,7 +194,9 @@ def criar_card_filme(container, nome, duracao, sala, caminho_img, coluna):
     ctk.CTkLabel(frame_card, text=nome, font=("Arial", 18, "bold")).pack(pady=(15, 5))
     ctk.CTkLabel(frame_card, text=f"Duração: {duracao}", font=("Arial", 15)).pack()
     ctk.CTkLabel(frame_card, text=f"SALA: {sala}", font=("Arial", 15, "bold"), text_color="#3498db").pack()
-
+#================================================================
+#bagual pra ver a lista de filmes
+#================================================================
 def ver_filmes():
     limpar_tela_principal()
 
@@ -246,6 +269,75 @@ def mostrar_tela_sala(numero_sala):
     btn_reservar.pack(pady=30)
 
 
+#===========================================================
+#historico do krl
+#==============================================================
+def ver_historico():
+    limpar_tela_principal()
+    
+    # 1. Adicionar um título para a página
+    titulo = ctk.CTkLabel(
+        main_frame, 
+        text="Histórico de Movimentações", 
+        font=("Arial", 28, "bold"),
+        text_color="#3498db"
+    )
+    titulo.pack(pady=(20, 10))
+
+    # 2. Criar uma área com barra de rolagem (ScrollableFrame)
+    # Assim, se tiver muito histórico, o usuário pode fazer scroll
+    area_scroll = ctk.CTkScrollableFrame(
+        main_frame, 
+        width=800, 
+        height=600, 
+        fg_color="transparent" # Deixa o fundo limpo
+    )
+    area_scroll.pack(fill="both", expand=True, padx=40, pady=20)
+
+    conn = None
+    try:
+        conn = psycopg2.connect(**DB_CONFIG)
+        cursor = conn.cursor()
+        query = "SELECT movimentacao FROM historico ORDER BY id DESC;" # Recomendo ordenar do mais recente para o mais antigo (se tiver a coluna id/data)
+        cursor.execute(query)
+
+        resultado = cursor.fetchall()
+        
+        if not resultado:
+            aviso = ctk.CTkLabel(area_scroll, text="Nenhum histórico encontrado.", font=("Arial", 16, "italic"))
+            aviso.pack(pady=20)
+
+        # 3. Criar "Cards" (caixas arredondadas) para cada registro
+        for linha in resultado:
+            texto_movimentacao = linha[0] # Pega apenas o texto, tirando da tupla (,)
+
+            # Cria a caixinha de fundo para o texto
+            card = ctk.CTkFrame(
+                area_scroll, 
+                fg_color="#2b2b36", # Cor de fundo mais clara que o fundo principal para dar contraste
+                corner_radius=8
+            )
+            card.pack(fill="x", padx=10, pady=5) # fill="x" faz o card esticar na horizontal
+
+            # Coloca o texto dentro do card, alinhado à esquerda (anchor="w")
+            lbl_texto = ctk.CTkLabel(
+                card, 
+                text=texto_movimentacao, 
+                font=("Arial", 15), 
+                anchor="w",
+                justify="left"
+            )
+            lbl_texto.pack(fill="x", padx=15, pady=15) # O padx e pady dão "respiro" dentro do card
+
+    except Exception as error:
+        erro_lbl = ctk.CTkLabel(area_scroll, text=f"Erro ao carregar histórico: {error}", text_color="#f44336")
+        erro_lbl.pack(pady=20)
+        
+    finally:
+        if conn:
+            cursor.close()
+            conn.close()
+
 # ============================================================
 # BOTÕES DO MENU LATERAL (ESTILO PREMIUM)
 # ============================================================
@@ -272,8 +364,8 @@ btn_filmes = criar_botao_menu("Filmes em Cartaz", ver_filmes)
 btn_sala1 = criar_botao_menu("Ver Sala 1", lambda: mostrar_tela_sala(1))
 btn_sala2 = criar_botao_menu("Ver Sala 2", lambda: mostrar_tela_sala(2))
 btn_sala3 = criar_botao_menu("Ver Sala 3", lambda: mostrar_tela_sala(3))
-btn_calendario = criar_botao_menu("Calendário", lambda: print("Carregar calendário"))
-btn_historico = criar_botao_menu("Histórico", lambda: print("Carregar histórico"))
+btn_calendario = criar_botao_menu("Calendário", print("carregar hist"))
+btn_historico = criar_botao_menu("Histórico", lambda: ver_historico())
 
 botao_sair = ctk.CTkButton(
     menu_lateral, 
