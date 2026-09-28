@@ -95,14 +95,12 @@ def alternar_assento(btn):
     global assentos_selecionados
     cor_atual = btn.cget("fg_color")
     nome_assento = btn.cget("text")
-    
-    # Se estiver selecionando (muda para verde)
     if cor_atual in ["#ffffff", "#f44336"]: 
         if nome_assento not in assentos_selecionados:
             assentos_selecionados.append(nome_assento)
             btn.configure(fg_color="#4CAF50", text_color="white")
     else:
-        # Se clicar de novo para desmarcar, devolve a cor original
+
         if nome_assento in assentos_selecionados:
             assentos_selecionados.remove(nome_assento)
             btn.configure(fg_color="#ffffff", text_color="black")
@@ -119,25 +117,23 @@ def confirmar_reserva(numero_sala):
         conn = psycopg2.connect(**DB_CONFIG)
         cursor = conn.cursor()
         tabela = f"assentos_sala_{numero_sala}"
-
-        # 1. Atualiza todos os assentos selecionados no banco
         for assento in assentos_selecionados:
             letra = assento[0]
             numero = assento[1:]
             query = f"UPDATE {tabela} SET ocupado = true WHERE fila = %s AND numero_cadeira = %s;"      
             cursor.execute(query, (letra, numero))
 
-        # 2. Prepara e insere o histórico
+
         assentos_str = ", ".join(assentos_selecionados) 
         texto_historico = f"Reserva na Sala {numero_sala} - Assentos: {assentos_str}"
         query2 = "INSERT INTO historico (movimentacao) VALUES (%s);"
         cursor.execute(query2, (texto_historico,))
         
-        # 3. Confirma a transação
+
         conn.commit()
         print(f"Reserva concluída na Sala {numero_sala}: {assentos_str}")
         
-        # 4. Limpa a seleção e atualiza a interface
+
         assentos_selecionados.clear()
         mostrar_tela_sala(numero_sala)
 
@@ -163,24 +159,24 @@ def cancelar_reserva(numero_sala):
         cursor = conn.cursor()
         tabela = f"assentos_sala_{numero_sala}"
 
-        # 1. Atualiza todos os assentos selecionados no banco
+
         for assento in assentos_selecionados:
             letra = assento[0]
             numero = assento[1:]
             query = f"UPDATE {tabela} SET ocupado = false WHERE fila = %s AND numero_cadeira = %s;"      
             cursor.execute(query, (letra, numero))
 
-        # 2. Prepara e insere o histórico
+
         assentos_str = ", ".join(assentos_selecionados) 
         texto_historico = f"Cancelamento na Sala {numero_sala} - Assentos: {assentos_str}"
         query2 = "INSERT INTO historico (movimentacao) VALUES (%s);"
         cursor.execute(query2, (texto_historico,))
         
-        # 3. Confirma a transação
+
         conn.commit()
         print(f"Reserva concluída na Sala {numero_sala}: {assentos_str}")
         
-        # 4. Limpa a seleção e atualiza a interface
+
         assentos_selecionados.clear()
         mostrar_tela_sala(numero_sala)
 
@@ -368,7 +364,7 @@ def mostrar_tela_sala(numero_sala):
 
     btn_reservar = ctk.CTkButton(
         frame_acoes,
-        text='Confirmar Reserva',
+        text='Confirmar reserva',
         height=45,
         font=("Arial", 15, "bold"),
         fg_color="#0d761f",
@@ -443,8 +439,12 @@ def ver_historico():
             lbl_texto.pack(fill="x", padx=15, pady=15)
 
     except Exception as error:
-        erro_lbl = ctk.CTkLabel(area_scroll, text=f"Erro ao carregar histórico: {error}", text_color="#f44336")
-        erro_lbl.pack(pady=20)
+        if 'relação "historico" não existe' in str(error):
+            lbl = ctk.CTkLabel(area_scroll, text="Não há registro no histórico atualmente", text_color="#f44336", font=('Arial', 17, 'bold'))
+            lbl.pack()
+        else: 
+            erro_lbl = ctk.CTkLabel(area_scroll, text=f"Erro ao carregar histórico: {error}", text_color="#f44336")
+            erro_lbl.pack(pady=20)
         
     finally:
         if conn:
@@ -497,3 +497,16 @@ botao_sair.pack(fill="x", padx=20, pady=30, side="bottom")
 # ============================================================
 mostrar_tela_inicial()
 app.mainloop()
+#esta funcionando
+#como?
+#pq?
+#quando?
+#ninguem sabe
+#talvez o junior que fez esse code saiba
+#mas só ele tbm
+#e ele saiu da empresa faz 5 anos
+#não mexa
+#"a, mas eu quero mexer numa função"
+#não
+#apenas não.
+#fe nessa prr neguinho
