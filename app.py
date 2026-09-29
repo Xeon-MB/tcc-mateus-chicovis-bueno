@@ -44,6 +44,8 @@ filmes_dias = {
     "Domingo": "A Odisseia"
 }
 
+tipo_selecao_atual = None
+
 # ============================================================
 # CONFIGURAÇÃO DA JANELA PRINCIPAL
 # ============================================================
@@ -88,15 +90,41 @@ def buscar_estado_sala(numero_sala):
     return status_assentos
 
 
-def alternar_assento(btn, nome_assento):
-    global assentos_selecionados
+def alternar_assento(btn, nome_assento, esta_ocupado):
+    global assentos_selecionados, tipo_selecao_atual
+
+    status_clicado = "ocupado" if esta_ocupado else "disponivel"
 
     if nome_assento in assentos_selecionados:
-        # Desmarcar o assento
         assentos_selecionados.remove(nome_assento)
-        btn.configure(fg_color="#ffffff", text_color="#000000")
+        
+        if esta_ocupado:
+            btn.configure(fg_color="#333333", text_color="#777777")
+        else:
+            btn.configure(fg_color="#ffffff", text_color="#000000")
+
+        if not assentos_selecionados:
+            tipo_selecao_atual = None
+
     else:
-        # Marcar o assento
+        if tipo_selecao_atual is None:
+            tipo_selecao_atual = status_clicado
+      
+        elif tipo_selecao_atual != status_clicado:
+            aviso_rapido = ctk.CTkLabel(
+                app, 
+                text="Não pode selecionar um assento reservado e um não reservado ao mesmo tempo!", 
+                fg_color="#ff0000",  
+                text_color="white", 
+                corner_radius=8,    
+                padx=15, pady=8     
+                )
+
+            aviso_rapido.place(relx=0.5, rely=0.1, anchor="center")
+    
+            app.after(2000, aviso_rapido.place_forget)
+            return
+
         assentos_selecionados.append(nome_assento)
         btn.configure(fg_color="#e50914", text_color="#ffffff")
 
@@ -177,8 +205,9 @@ def cancelar_reserva(numero_sala):
 # AUXILIARES DE INTERFACE
 # ============================================================
 def limpar_tela_principal():
-    global assentos_selecionados
+    global assentos_selecionados, tipo_selecao_atual
     assentos_selecionados.clear()
+    tipo_selecao_atual = None
     for widget in main_frame.winfo_children():
         widget.destroy()
 
@@ -322,8 +351,8 @@ def mostrar_tela_sala(numero_sala):
                 hover_color="#e50914" if not esta_ocupado else "#333333"
             )
 
-            if not esta_ocupado:
-                btn.configure(command=lambda b=btn, a=nome_assento: alternar_assento(b, a))
+
+            btn.configure(command=lambda b=btn, a=nome_assento, o=esta_ocupado: alternar_assento(b, a, o))
 
             # Cria um espaço no meio das cadeiras simulando o corredor do cinema
             espaco_corredor = (2, 12) if coluna == 10 else (2, 2)
