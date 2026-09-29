@@ -2,11 +2,14 @@ import subprocess
 import sys
 from pathlib import Path
 
+# ============================================================
+# INSTALAÇÃO AUTOMÁTICA DE BIBLIOTECAS
+# ============================================================
 def verificar_e_instalar(pacote):
     try:
         __import__(pacote)
     except ImportError:
-        print(f"Biblioteca '{pacote}' não encontrada. A instalar automaticamente...")
+        print(f"Instalando {pacote}...")
         subprocess.check_call([sys.executable, "-m", "pip", "install", pacote])
 
 verificar_e_instalar("customtkinter")
@@ -18,7 +21,7 @@ import psycopg2
 from PIL import Image
 
 # ============================================================
-# CONFIGURAÇÕES E CONSTANTES
+# CONFIGURAÇÕES DO BANCO DE DADOS E VARIÁVEIS
 # ============================================================
 DB_CONFIG = {
     "dbname": "wow",
@@ -42,30 +45,24 @@ filmes_dias = {
 }
 
 # ============================================================
-# INICIALIZAÇÃO DA JANELA PRINCIPAL
+# CONFIGURAÇÃO DA JANELA PRINCIPAL
 # ============================================================
 ctk.set_appearance_mode("dark")
-ctk.set_default_color_theme("blue")
-
 app = ctk.CTk()
 app.title("CineSenai")
-app.geometry("1920x1080")
+app.geometry("1280x720")
+app.configure(fg_color="#121212")
 
-try:
-    app.state("zoomed")
-except Exception:
-    pass
-
-# Frames de layout principal
-menu_lateral = ctk.CTkFrame(app, width=250, fg_color="#1e1e24")
+# Layout de telas
+menu_lateral = ctk.CTkFrame(app, width=220, fg_color="#1a1a1a", corner_radius=0)
 menu_lateral.pack(side="left", fill="y")
 
-main_frame = ctk.CTkFrame(app)
+main_frame = ctk.CTkFrame(app, fg_color="#121212", corner_radius=0)
 main_frame.pack(side="right", fill="both", expand=True, padx=20, pady=20)
 
 
 # ============================================================
-# LÓGICA DE BASE DE DADOS E ASSENTOS
+# FUNÇÕES DE BANCO DE DADOS
 # ============================================================
 def buscar_estado_sala(numero_sala):
     status_assentos = {}
@@ -73,7 +70,7 @@ def buscar_estado_sala(numero_sala):
     try:
         conn = psycopg2.connect(**DB_CONFIG)
         cursor = conn.cursor()
-        tabela = f"assentos_sala_{numero_sala}" 
+        tabela = f"assentos_sala_{numero_sala}"
         cursor.execute(f"SELECT fila, numero_cadeira, ocupado FROM {tabela};")
         linhas = cursor.fetchall()
 
@@ -82,7 +79,7 @@ def buscar_estado_sala(numero_sala):
             status_assentos[chave] = ocupado
 
     except Exception as error:
-        print(f"Erro ao consultar a base de dados: {error}")
+        print(f"Erro ao buscar assentos: {error}")
     finally:
         if conn:
             cursor.close()
@@ -91,19 +88,17 @@ def buscar_estado_sala(numero_sala):
     return status_assentos
 
 
-def alternar_assento(btn):
+def alternar_assento(btn, nome_assento):
     global assentos_selecionados
-    cor_atual = btn.cget("fg_color")
-    nome_assento = btn.cget("text")
-    if cor_atual in ["#ffffff", "#f44336"]: 
-        if nome_assento not in assentos_selecionados:
-            assentos_selecionados.append(nome_assento)
-            btn.configure(fg_color="#4CAF50", text_color="white")
-    else:
 
-        if nome_assento in assentos_selecionados:
-            assentos_selecionados.remove(nome_assento)
-            btn.configure(fg_color="#ffffff", text_color="black")
+    if nome_assento in assentos_selecionados:
+        # Desmarcar o assento
+        assentos_selecionados.remove(nome_assento)
+        btn.configure(fg_color="#ffffff", text_color="#000000")
+    else:
+        # Marcar o assento
+        assentos_selecionados.append(nome_assento)
+        btn.configure(fg_color="#e50914", text_color="#ffffff")
 
 
 def confirmar_reserva(numero_sala):
@@ -117,28 +112,23 @@ def confirmar_reserva(numero_sala):
         conn = psycopg2.connect(**DB_CONFIG)
         cursor = conn.cursor()
         tabela = f"assentos_sala_{numero_sala}"
+
         for assento in assentos_selecionados:
             letra = assento[0]
             numero = assento[1:]
-            query = f"UPDATE {tabela} SET ocupado = true WHERE fila = %s AND numero_cadeira = %s;"      
+            query = f"UPDATE {tabela} SET ocupado = true WHERE fila = %s AND numero_cadeira = %s;"
             cursor.execute(query, (letra, numero))
 
-
-        assentos_str = ", ".join(assentos_selecionados) 
+        assentos_str = ", ".join(assentos_selecionados)
         texto_historico = f"Reserva na Sala {numero_sala} - Assentos: {assentos_str}"
-        query2 = "INSERT INTO historico (movimentacao) VALUES (%s);"
-        cursor.execute(query2, (texto_historico,))
+        cursor.execute("INSERT INTO historico (movimentacao) VALUES (%s);", (texto_historico,))
         
-
         conn.commit()
-        print(f"Reserva concluída na Sala {numero_sala}: {assentos_str}")
-        
-
         assentos_selecionados.clear()
         mostrar_tela_sala(numero_sala)
 
     except Exception as error:
-        print(f"Erro ao operar no banco: {error}")
+        print(f"Erro no banco: {error}")
         if conn:
             conn.rollback()
     finally:
@@ -159,29 +149,22 @@ def cancelar_reserva(numero_sala):
         cursor = conn.cursor()
         tabela = f"assentos_sala_{numero_sala}"
 
-
         for assento in assentos_selecionados:
             letra = assento[0]
             numero = assento[1:]
-            query = f"UPDATE {tabela} SET ocupado = false WHERE fila = %s AND numero_cadeira = %s;"      
+            query = f"UPDATE {tabela} SET ocupado = false WHERE fila = %s AND numero_cadeira = %s;"
             cursor.execute(query, (letra, numero))
 
-
-        assentos_str = ", ".join(assentos_selecionados) 
+        assentos_str = ", ".join(assentos_selecionados)
         texto_historico = f"Cancelamento na Sala {numero_sala} - Assentos: {assentos_str}"
-        query2 = "INSERT INTO historico (movimentacao) VALUES (%s);"
-        cursor.execute(query2, (texto_historico,))
+        cursor.execute("INSERT INTO historico (movimentacao) VALUES (%s);", (texto_historico,))
         
-
         conn.commit()
-        print(f"Reserva concluída na Sala {numero_sala}: {assentos_str}")
-        
-
         assentos_selecionados.clear()
         mostrar_tela_sala(numero_sala)
 
     except Exception as error:
-        print(f"Erro ao operar no banco: {error}")
+        print(f"Erro no banco: {error}")
         if conn:
             conn.rollback()
     finally:
@@ -191,7 +174,7 @@ def cancelar_reserva(numero_sala):
 
 
 # ============================================================
-# COMPONENTES REUTILIZÁVEIS DA UI
+# AUXILIARES DE INTERFACE
 # ============================================================
 def limpar_tela_principal():
     global assentos_selecionados
@@ -202,30 +185,30 @@ def limpar_tela_principal():
 
 def criar_card_filme(container, nome, duracao, sala, caminho_img, coluna):
     frame_card = ctk.CTkFrame(container, fg_color="transparent")
-    frame_card.grid(row=0, column=coluna, padx=40)
+    frame_card.grid(row=0, column=coluna, padx=25)
 
     try:
         img = Image.open(caminho_img)
     except FileNotFoundError:
-        img = Image.new("RGB", (200, 300), color="#2b2b36")
+        img = Image.new("RGB", (180, 260), color="#2b2b36")
 
-    ctk_img = ctk.CTkImage(light_image=img, dark_image=img, size=(200, 300))
+    ctk_img = ctk.CTkImage(light_image=img, dark_image=img, size=(180, 260))
 
     btn_img = ctk.CTkButton(
         frame_card,
         text="",
         image=ctk_img,
-        width=200,
-        height=300,
+        width=180,
+        height=260,
         fg_color="transparent",
-        hover_color="#3a3a48",
+        hover_color="#2b2b36",
         command=lambda: mostrar_tela_sala(sala)
     )
     btn_img.pack()
 
-    ctk.CTkLabel(frame_card, text=nome, font=("Arial", 18, "bold")).pack(pady=(15, 5))
-    ctk.CTkLabel(frame_card, text=f"Duração: {duracao}", font=("Arial", 15)).pack()
-    ctk.CTkLabel(frame_card, text=f"SALA: {sala}", font=("Arial", 15, "bold"), text_color="#3498db").pack()
+    ctk.CTkLabel(frame_card, text=nome, font=("Arial", 16, "bold"), text_color="#ffffff").pack(pady=(10, 2))
+    ctk.CTkLabel(frame_card, text=f"Duração: {duracao}", font=("Arial", 13), text_color="#aaaaaa").pack()
+    ctk.CTkLabel(frame_card, text=f"SALA {sala}", font=("Arial", 14, "bold"), text_color="#e50914").pack(pady=(2, 0))
 
 
 # ============================================================
@@ -234,79 +217,48 @@ def criar_card_filme(container, nome, duracao, sala, caminho_img, coluna):
 def mostrar_tela_inicial():
     limpar_tela_principal()
 
-    boas_vindas = ctk.CTkLabel(
+    ctk.CTkLabel(
         main_frame,
         text="Bem-vindo ao CineSenai",
-        font=("Arial", 42, "bold"),
-        text_color="#4CAF50"
-    )
-    boas_vindas.pack(pady=(150, 20))
+        font=("Arial", 36, "bold"),
+        text_color="#ffffff"
+    ).pack(pady=(150, 10))
 
-    subtitulo = ctk.CTkLabel(
+    ctk.CTkLabel(
         main_frame,
-        text="Sistema de Gestão de Reservas e Bilheteira",
-        font=("Arial", 22)
-    )
-    subtitulo.pack(pady=10)
+        text="Selecione uma opção no menu lateral para começar.",
+        font=("Arial", 16),
+        text_color="#aaaaaa"
+    ).pack(pady=10)
 
-#==============================================================
-#calendario
-#==============================================================
+
 def ver_calendario():
     limpar_tela_principal()
 
-    titulo = ctk.CTkLabel(
+    ctk.CTkLabel(
         main_frame,
-        text="Programação da Semana",
-        font=("Arial", 32, "bold"),
-        text_color="#3498db"
-    )
-    titulo.pack(pady=30)
+        text="PROGRAMAÇÃO DA SEMANA",
+        font=("Arial", 26, "bold"),
+        text_color="#ffffff"
+    ).pack(pady=20)
 
-    dias = [
-        "Segunda-feira",
-        "Terça-feira",
-        "Quarta-feira",
-        "Quinta-feira",
-        "Sexta-feira",
-        "Sábado",
-        "Domingo"
-    ]
+    dias = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"]
 
     for dia in dias:
         filme = filmes_dias[dia]
 
-        card = ctk.CTkFrame(
-            main_frame,
-            width=700,
-            height=70,
-            fg_color="#2b2b36",
-            corner_radius=10
-        )
-        card.pack(pady=7, padx=100)
+        card = ctk.CTkFrame(main_frame, width=600, height=50, fg_color="#1a1a1a", corner_radius=8)
+        card.pack(pady=5)
         card.pack_propagate(False)
 
-        lbl_dia = ctk.CTkLabel(
-            card,
-            text=dia,
-            font=("Arial", 18, "bold"),
-            width=220
-        )
-        lbl_dia.pack(side="left", padx=20)
-
-        lbl_filme = ctk.CTkLabel(
-            card,
-            text=filme,
-            font=("Arial", 18)
-        )
-        lbl_filme.pack(side="left", padx=20)
+        ctk.CTkLabel(card, text=dia, font=("Arial", 15, "bold"), text_color="#e50914", width=180, anchor="w").pack(side="left", padx=20)
+        ctk.CTkLabel(card, text=filme, font=("Arial", 15), text_color="#ffffff").pack(side="left", padx=10)
 
 
 def ver_filmes():
     limpar_tela_principal()
 
-    titulo = ctk.CTkLabel(main_frame, text="Filmes em Cartaz", font=("Arial", 32, "bold"))
-    titulo.pack(pady=40)
+    ctk.CTkLabel(main_frame, text="FILMES EM CARTAZ", font=("Arial", 28, "bold"), text_color="#ffffff").pack(pady=20)
 
     container_filmes = ctk.CTkFrame(main_frame, fg_color="transparent")
     container_filmes.pack(pady=20)
@@ -319,135 +271,145 @@ def ver_filmes():
 def mostrar_tela_sala(numero_sala):
     limpar_tela_principal()
 
-    titulo = ctk.CTkLabel(main_frame, text=f"SALA {numero_sala}", font=("Arial", 28, "bold"))
-    titulo.pack(pady=20)
+    # Título da Sala
+    ctk.CTkLabel(
+        main_frame, 
+        text=f"ESCOLHA SEUS ASSENTOS - SALA {numero_sala}", 
+        font=("Arial", 22, "bold"), 
+        text_color="#ffffff"
+    ).pack(pady=(10, 15))
 
-    grade_frame = ctk.CTkFrame(main_frame)
-    grade_frame.pack(pady=10)
+    # Área de rolagem caso o monitor seja pequeno
+    scroll_frame = ctk.CTkScrollableFrame(main_frame, fg_color="transparent", height=420)
+    scroll_frame.pack(fill="both", expand=True, padx=10)
+
+    grade_frame = ctk.CTkFrame(scroll_frame, fg_color="transparent")
+    grade_frame.pack(anchor="center")
 
     status_no_banco = buscar_estado_sala(numero_sala)
 
-    filas = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K']
+    # EXACTAMENTE 200 ASSENTOS: 10 filas (A até J) x 20 colunas (1 até 20)
+    filas = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
     colunas = list(range(1, 21))
 
     for r_idx, fila in enumerate(filas):
+        # Letra da Fila no lado esquerdo
+        lbl_fila = ctk.CTkLabel(grade_frame, text=fila, font=("Arial", 12, "bold"), text_color="#aaaaaa", width=25)
+        lbl_fila.grid(row=r_idx, column=0, padx=(0, 10), pady=3)
+
         for c_idx, coluna in enumerate(colunas):
             nome_assento = f"{fila}{coluna}"
             esta_ocupado = status_no_banco.get(nome_assento, False)
 
             if esta_ocupado:
-                cor_fundo = "#f44336"
-                cor_texto = "white"
-                estado_botao = "normal"
+                cor_fundo = "#333333"
+                cor_texto = "#777777"
+                texto_btn = "✕"
             else:
                 cor_fundo = "#ffffff"
-                cor_texto = "black"
-                estado_botao = "normal"
+                cor_texto = "#000000"
+                texto_btn = str(coluna)
 
             btn = ctk.CTkButton(
                 grade_frame,
-                text=nome_assento,
-                width=50,
-                height=40,
-                font=("Arial", 12, "bold"),
+                text=texto_btn,
+                width=32,
+                height=30,
+                corner_radius=4,
+                font=("Arial", 10, "bold"),
                 fg_color=cor_fundo,
                 text_color=cor_texto,
-                text_color_disabled="white", 
-                state=estado_botao
+                hover_color="#e50914" if not esta_ocupado else "#333333"
             )
 
-            if estado_botao == "normal":
-                btn.configure(command=lambda b=btn: alternar_assento(b))
-            
-            btn.grid(row=r_idx, column=c_idx, padx=5, pady=5)
+            if not esta_ocupado:
+                btn.configure(command=lambda b=btn, a=nome_assento: alternar_assento(b, a))
 
-    frame_acoes = ctk.CTkFrame(main_frame, fg_color="transparent")
-    frame_acoes.pack(pady=20)
+            # Cria um espaço no meio das cadeiras simulando o corredor do cinema
+            espaco_corredor = (2, 12) if coluna == 10 else (2, 2)
+            btn.grid(row=r_idx, column=c_idx+1, padx=espaco_corredor, pady=3)
 
-    btn_reservar = ctk.CTkButton(
+    # Indicador de Tela de Cinema
+    frame_tela = ctk.CTkFrame(scroll_frame, fg_color="#222225", height=12, corner_radius=6)
+    frame_tela.pack(fill="x", padx=120, pady=(25, 5))
+    
+    ctk.CTkLabel(scroll_frame, text="T E L A", font=("Arial", 11, "bold"), text_color="#777777").pack()
+
+    # Legenda e Botões no Rodapé
+    rodape = ctk.CTkFrame(main_frame, fg_color="transparent")
+    rodape.pack(fill="x", pady=(10, 0))
+
+    # Legenda de Status
+    legenda = ctk.CTkFrame(rodape, fg_color="transparent")
+    legenda.pack(side="left")
+
+    # Item Disponível
+    ctk.CTkFrame(legenda, width=12, height=12, fg_color="#ffffff", corner_radius=2).pack(side="left", padx=(0, 5))
+    ctk.CTkLabel(legenda, text="Disponível", font=("Arial", 12), text_color="#aaaaaa").pack(side="left", padx=(0, 15))
+
+    # Item Indisponível
+    ctk.CTkFrame(legenda, width=12, height=12, fg_color="#333333", corner_radius=2).pack(side="left", padx=(0, 5))
+    ctk.CTkLabel(legenda, text="Indisponível", font=("Arial", 12), text_color="#aaaaaa").pack(side="left", padx=(0, 15))
+
+    # Item Selecionado
+    ctk.CTkFrame(legenda, width=12, height=12, fg_color="#e50914", corner_radius=2).pack(side="left", padx=(0, 5))
+    ctk.CTkLabel(legenda, text="Selecionado", font=("Arial", 12), text_color="#aaaaaa").pack(side="left")
+
+    # Botões de Ação
+    frame_acoes = ctk.CTkFrame(rodape, fg_color="transparent")
+    frame_acoes.pack(side="right")
+
+    ctk.CTkButton(
         frame_acoes,
-        text='Confirmar reserva',
-        height=45,
-        font=("Arial", 15, "bold"),
-        fg_color="#0d761f",
-        hover_color="#095415",
-        text_color="white",
+        text="Confirmar Reserva",
+        font=("Arial", 13, "bold"),
+        fg_color="#e50914",
+        hover_color="#b80710",
         command=lambda: confirmar_reserva(numero_sala)
-    )
-    btn_reservar.pack(side="left", padx=10)
+    ).pack(side="left", padx=5)
 
-    btn_cancelar = ctk.CTkButton(
+    ctk.CTkButton(
         frame_acoes,
-        text='Cancelar Reserva',
-        height=45,
-        font=("Arial", 15, "bold"),
-        fg_color="#c92a2a",
-        hover_color="#911f1f",
-        text_color="white",
+        text="Cancelar Reserva",
+        font=("Arial", 13, "bold"),
+        fg_color="#2b2b30",
+        hover_color="#3a3a40",
         command=lambda: cancelar_reserva(numero_sala)
-    )
-    btn_cancelar.pack(side="left", padx=10)
+    ).pack(side="left")
 
 
 def ver_historico():
     limpar_tela_principal()
     
-    titulo = ctk.CTkLabel(
+    ctk.CTkLabel(
         main_frame, 
-        text="Histórico de Movimentações", 
-        font=("Arial", 28, "bold"),
-        text_color="#3498db"
-    )
-    titulo.pack(pady=(20, 10))
+        text="HISTÓRICO DE MOVIMENTAÇÕES", 
+        font=("Arial", 26, "bold"),
+        text_color="#ffffff"
+    ).pack(pady=20)
 
-    area_scroll = ctk.CTkScrollableFrame(
-        main_frame, 
-        width=800, 
-        height=600, 
-        fg_color="transparent"
-    )
-    area_scroll.pack(fill="both", expand=True, padx=40, pady=20)
+    area_scroll = ctk.CTkScrollableFrame(main_frame, fg_color="transparent")
+    area_scroll.pack(fill="both", expand=True, padx=20, pady=10)
 
     conn = None
     try:
         conn = psycopg2.connect(**DB_CONFIG)
         cursor = conn.cursor()
-        query = "SELECT movimentacao FROM historico ORDER BY id DESC;"
-        cursor.execute(query)
+        cursor.execute("SELECT movimentacao FROM historico ORDER BY id DESC;")
 
         resultado = cursor.fetchall()
         
         if not resultado:
-            aviso = ctk.CTkLabel(area_scroll, text="Nenhum histórico encontrado.", font=("Arial", 16, "italic"))
-            aviso.pack(pady=20)
+            ctk.CTkLabel(area_scroll, text="Nenhum histórico encontrado.", font=("Arial", 15), text_color="#aaaaaa").pack(pady=20)
 
         for linha in resultado:
-            texto_movimentacao = linha[0]
+            card = ctk.CTkFrame(area_scroll, fg_color="#1a1a1a", corner_radius=6)
+            card.pack(fill="x", padx=10, pady=4)
 
-            card = ctk.CTkFrame(
-                area_scroll, 
-                fg_color="#2b2b36", 
-                corner_radius=8
-            )
-            card.pack(fill="x", padx=10, pady=5)
-
-            lbl_texto = ctk.CTkLabel(
-                card, 
-                text=texto_movimentacao, 
-                font=("Arial", 15), 
-                anchor="w",
-                justify="left"
-            )
-            lbl_texto.pack(fill="x", padx=15, pady=15)
+            ctk.CTkLabel(card, text=linha[0], font=("Arial", 13), text_color="#ffffff", anchor="w").pack(fill="x", padx=15, pady=10)
 
     except Exception as error:
-        if 'relação "historico" não existe' in str(error):
-            lbl = ctk.CTkLabel(area_scroll, text="Não há registro no histórico atualmente", text_color="#f44336", font=('Arial', 17, 'bold'))
-            lbl.pack()
-        else: 
-            erro_lbl = ctk.CTkLabel(area_scroll, text=f"Erro ao carregar histórico: {error}", text_color="#f44336")
-            erro_lbl.pack(pady=20)
-        
+        ctk.CTkLabel(area_scroll, text=f"Erro ao carregar histórico: {error}", text_color="#e50914").pack(pady=20)
     finally:
         if conn:
             cursor.close()
@@ -455,10 +417,9 @@ def ver_historico():
 
 
 # ============================================================
-# BOTÕES DO MENU LATERAL
+# MENU LATERAL DE NAVEGAÇÃO
 # ============================================================
-titulo_menu = ctk.CTkLabel(menu_lateral, text="CineSenai", font=("Arial", 28, "bold"))
-titulo_menu.pack(pady=(30, 40))
+ctk.CTkLabel(menu_lateral, text="CINESENAI", font=("Arial", 22, "bold"), text_color="#e50914").pack(pady=(30, 30))
 
 def criar_botao_menu(texto, comando):
     btn = ctk.CTkButton(
@@ -466,36 +427,35 @@ def criar_botao_menu(texto, comando):
         text=texto, 
         command=comando,
         fg_color="transparent",
-        hover_color="#2b2b36",
-        text_color="white",
-        font=("Arial", 16),
+        hover_color="#2b2b30",
+        text_color="#ffffff",
+        font=("Arial", 14),
         anchor="w",
-        height=45
+        height=40
     )
-    btn.pack(fill="x", padx=15, pady=5)
+    btn.pack(fill="x", padx=10, pady=2)
     return btn
 
-btn_inicio = criar_botao_menu("Início", mostrar_tela_inicial)
-btn_filmes = criar_botao_menu("Filmes em Cartaz", ver_filmes)
-btn_sala1 = criar_botao_menu("Ver Sala 1", lambda: mostrar_tela_sala(1))
-btn_sala2 = criar_botao_menu("Ver Sala 2", lambda: mostrar_tela_sala(2))
-btn_sala3 = criar_botao_menu("Ver Sala 3", lambda: mostrar_tela_sala(3))
-btn_calendario = criar_botao_menu("Calendário", ver_calendario)
-btn_historico = criar_botao_menu("Histórico", lambda: ver_historico())
+criar_botao_menu("Início", mostrar_tela_inicial)
+criar_botao_menu("Filmes em Cartaz", ver_filmes)
+criar_botao_menu("Ver Sala 1", lambda: mostrar_tela_sala(1))
+criar_botao_menu("Ver Sala 2", lambda: mostrar_tela_sala(2))
+criar_botao_menu("Ver Sala 3", lambda: mostrar_tela_sala(3))
+criar_botao_menu("Calendário", ver_calendario)
+criar_botao_menu("Histórico", ver_historico)
 
-botao_sair = ctk.CTkButton(
+ctk.CTkButton(
     menu_lateral, 
     text="Sair", 
-    fg_color="#c92a2a", 
-    hover_color="#911f1f", 
+    fg_color="#e50914", 
+    hover_color="#b80710", 
     command=app.destroy,
-    font=("Arial", 15, "bold"),
-    height=45
-)
-botao_sair.pack(fill="x", padx=20, pady=30, side="bottom")
+    font=("Arial", 13, "bold"),
+    height=38
+).pack(fill="x", padx=15, pady=20, side="bottom")
 
 # ============================================================
-# EXECUÇÃO DO APLICATIVO
+# INICIALIZAÇÃO
 # ============================================================
 mostrar_tela_inicial()
 app.mainloop()
