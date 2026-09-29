@@ -249,7 +249,9 @@ def mostrar_tela_inicial():
     )
     subtitulo.pack(pady=10)
 
-
+#==============================================================
+#calendario
+#==============================================================
 def ver_calendario():
     limpar_tela_principal()
 
@@ -497,16 +499,3 @@ botao_sair.pack(fill="x", padx=20, pady=30, side="bottom")
 # ============================================================
 mostrar_tela_inicial()
 app.mainloop()
-#esta funcionando
-#como?
-#pq?
-#quando?
-#ninguem sabe
-#talvez o junior que fez esse code saiba
-#mas só ele tbm
-#e ele saiu da empresa faz 5 anos
-#não mexa
-#"a, mas eu quero mexer numa função"
-#não
-#apenas não.
-#fe nessa prr neguinho

@@ -34,8 +34,7 @@ import customtkinter as ctk
 
 colunas = [
     "A", "B", "C", "D", "E",
-    "F", "G", "H", "I", "J",
-    "K"]
+    "F", "G", "H", "I", "J"]
 
 linhas = range(1, 21)
 
