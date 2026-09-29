@@ -55,7 +55,6 @@ app.title("CineSenai")
 app.geometry("1280x720")
 app.configure(fg_color="#121212")
 
-# Layout de telas
 menu_lateral = ctk.CTkFrame(app, width=220, fg_color="#1a1a1a", corner_radius=0)
 menu_lateral.pack(side="left", fill="y")
 
@@ -300,7 +299,6 @@ def ver_filmes():
 def mostrar_tela_sala(numero_sala):
     limpar_tela_principal()
 
-    # Título da Sala
     ctk.CTkLabel(
         main_frame, 
         text=f"ESCOLHA SEUS ASSENTOS - SALA {numero_sala}", 
@@ -308,7 +306,6 @@ def mostrar_tela_sala(numero_sala):
         text_color="#ffffff"
     ).pack(pady=(10, 15))
 
-    # Área de rolagem caso o monitor seja pequeno
     scroll_frame = ctk.CTkScrollableFrame(main_frame, fg_color="transparent", height=420)
     scroll_frame.pack(fill="both", expand=True, padx=10)
 
@@ -317,12 +314,10 @@ def mostrar_tela_sala(numero_sala):
 
     status_no_banco = buscar_estado_sala(numero_sala)
 
-    # EXACTAMENTE 200 ASSENTOS: 10 filas (A até J) x 20 colunas (1 até 20)
     filas = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
     colunas = list(range(1, 21))
 
     for r_idx, fila in enumerate(filas):
-        # Letra da Fila no lado esquerdo
         lbl_fila = ctk.CTkLabel(grade_frame, text=fila, font=("Arial", 12, "bold"), text_color="#aaaaaa", width=25)
         lbl_fila.grid(row=r_idx, column=0, padx=(0, 10), pady=3)
 
@@ -354,37 +349,29 @@ def mostrar_tela_sala(numero_sala):
 
             btn.configure(command=lambda b=btn, a=nome_assento, o=esta_ocupado: alternar_assento(b, a, o))
 
-            # Cria um espaço no meio das cadeiras simulando o corredor do cinema
             espaco_corredor = (2, 12) if coluna == 10 else (2, 2)
             btn.grid(row=r_idx, column=c_idx+1, padx=espaco_corredor, pady=3)
 
-    # Indicador de Tela de Cinema
     frame_tela = ctk.CTkFrame(scroll_frame, fg_color="#222225", height=12, corner_radius=6)
     frame_tela.pack(fill="x", padx=120, pady=(25, 5))
     
     ctk.CTkLabel(scroll_frame, text="T E L A", font=("Arial", 11, "bold"), text_color="#777777").pack()
 
-    # Legenda e Botões no Rodapé
     rodape = ctk.CTkFrame(main_frame, fg_color="transparent")
     rodape.pack(fill="x", pady=(10, 0))
 
-    # Legenda de Status
     legenda = ctk.CTkFrame(rodape, fg_color="transparent")
     legenda.pack(side="left")
 
-    # Item Disponível
     ctk.CTkFrame(legenda, width=12, height=12, fg_color="#ffffff", corner_radius=2).pack(side="left", padx=(0, 5))
     ctk.CTkLabel(legenda, text="Disponível", font=("Arial", 12), text_color="#aaaaaa").pack(side="left", padx=(0, 15))
 
-    # Item Indisponível
     ctk.CTkFrame(legenda, width=12, height=12, fg_color="#333333", corner_radius=2).pack(side="left", padx=(0, 5))
     ctk.CTkLabel(legenda, text="Indisponível", font=("Arial", 12), text_color="#aaaaaa").pack(side="left", padx=(0, 15))
 
-    # Item Selecionado
     ctk.CTkFrame(legenda, width=12, height=12, fg_color="#e50914", corner_radius=2).pack(side="left", padx=(0, 5))
     ctk.CTkLabel(legenda, text="Selecionado", font=("Arial", 12), text_color="#aaaaaa").pack(side="left")
 
-    # Botões de Ação
     frame_acoes = ctk.CTkFrame(rodape, fg_color="transparent")
     frame_acoes.pack(side="right")
 
