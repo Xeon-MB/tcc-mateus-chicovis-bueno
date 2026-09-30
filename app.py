@@ -88,6 +88,7 @@ def buscar_estado_sala(numero_sala):
             
     return status_assentos
 
+################################################################################################################
 
 def alternar_assento(btn, nome_assento, esta_ocupado):
     global assentos_selecionados, tipo_selecao_atual
@@ -127,6 +128,7 @@ def alternar_assento(btn, nome_assento, esta_ocupado):
         assentos_selecionados.append(nome_assento)
         btn.configure(fg_color="#e50914", text_color="#ffffff")
 
+################################################################################################################
 
 def confirmar_reserva(numero_sala):
     global assentos_selecionados
@@ -163,6 +165,7 @@ def confirmar_reserva(numero_sala):
             cursor.close()
             conn.close()
 
+################################################################################################################
 
 def cancelar_reserva(numero_sala):
     global assentos_selecionados
@@ -210,6 +213,7 @@ def limpar_tela_principal():
     for widget in main_frame.winfo_children():
         widget.destroy()
 
+################################################################################################################
 
 def criar_card_filme(container, nome, duracao, sala, caminho_img, coluna):
     frame_card = ctk.CTkFrame(container, fg_color="transparent")
@@ -259,6 +263,7 @@ def mostrar_tela_inicial():
         text_color="#aaaaaa"
     ).pack(pady=10)
 
+################################################################################################################
 
 def ver_calendario():
     limpar_tela_principal()
@@ -282,6 +287,7 @@ def ver_calendario():
         ctk.CTkLabel(card, text=dia, font=("Arial", 15, "bold"), text_color="#e50914", width=180, anchor="w").pack(side="left", padx=20)
         ctk.CTkLabel(card, text=filme, font=("Arial", 15), text_color="#ffffff").pack(side="left", padx=10)
 
+################################################################################################################
 
 def ver_filmes():
     limpar_tela_principal()
@@ -295,6 +301,7 @@ def ver_filmes():
     criar_card_filme(container_filmes, "Homem Aranha 3", "2H19M", 2, BASE_DIR / "homemaranha3.png", 1)
     criar_card_filme(container_filmes, "Barbie em Vida de Sereia", "1H15M", 3, BASE_DIR / "barbie.png", 2)
 
+################################################################################################################
 
 def mostrar_tela_sala(numero_sala):
     limpar_tela_principal()
@@ -375,7 +382,7 @@ def mostrar_tela_sala(numero_sala):
 
     card = ctk.CTkButton(filme_frame, text="", image=filme_img, width=180, height=260, fg_color="#121212",bg_color="#121212", hover_color="#2b2b36")
     card.pack()
-    nome = ctk.CTkLabel(filme_frame, text=nome_filme, fg_color="#121212",bg_color="#121212")
+    nome = ctk.CTkLabel(filme_frame, text=nome_filme, fg_color="#121212",bg_color="#121212", font = ("Arial", 20, "bold"))
     nome.pack()
 
     rodape = ctk.CTkFrame(main_frame, fg_color="transparent")
@@ -414,6 +421,7 @@ def mostrar_tela_sala(numero_sala):
         command=lambda: cancelar_reserva(numero_sala)
     ).pack(side="left")
 
+################################################################################################################
 
 def ver_historico():
     limpar_tela_principal()
@@ -471,7 +479,26 @@ def criar_botao_menu(texto, comando):
         height=40
     )
     btn.pack(fill="x", padx=10, pady=2)
+    
     return btn
+
+
+def sair():
+    janela = ctk.CTkToplevel(app)
+    janela.title("Confirmação")
+    
+    frame = ctk.CTkFrame(janela)
+    frame.pack(padx=20, pady=20)
+
+    label = ctk.CTkLabel(frame, text="Quer realmente sair?", font=("Arial", 18, "bold"))
+    label.grid(row=0, column=0, padx=10, pady=10)
+
+    sair = ctk.CTkButton(frame, text="Sair", fg_color="red", command=app.destroy)
+    sair.grid(row=1, column=0, padx=10, pady=10)
+
+    nn = ctk.CTkButton(frame, text="Voltar", fg_color="green", command=janela.destroy)
+    nn.grid(row=2, column=0, padx=10, pady=10)
+
 
 criar_botao_menu("Início", mostrar_tela_inicial)
 criar_botao_menu("Filmes em Cartaz", ver_filmes)
@@ -486,7 +513,7 @@ ctk.CTkButton(
     text="Sair", 
     fg_color="#e50914", 
     hover_color="#b80710", 
-    command=app.destroy,
+    command=sair,
     font=("Arial", 13, "bold"),
     height=38
 ).pack(fill="x", padx=15, pady=20, side="bottom")
