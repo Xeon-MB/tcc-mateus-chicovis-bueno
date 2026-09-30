@@ -306,7 +306,7 @@ def mostrar_tela_sala(numero_sala):
         text_color="#ffffff"
     ).pack(pady=(10, 15))
 
-    scroll_frame = ctk.CTkScrollableFrame(main_frame, fg_color="transparent", height=420)
+    scroll_frame = ctk.CTkScrollableFrame(main_frame, fg_color="transparent", height=420, bg_color="transparent")
     scroll_frame.pack(fill="both", expand=True, padx=10)
 
     grade_frame = ctk.CTkFrame(scroll_frame, fg_color="transparent")
@@ -356,6 +356,27 @@ def mostrar_tela_sala(numero_sala):
     frame_tela.pack(fill="x", padx=120, pady=(25, 5))
     
     ctk.CTkLabel(scroll_frame, text="T E L A", font=("Arial", 11, "bold"), text_color="#777777").pack()
+
+    filme_frame = ctk.CTkFrame(scroll_frame, bg_color="#121212", fg_color="#121212")
+    filme_frame.pack(fill="x")
+
+    if numero_sala == 1:
+        filme_img =  BASE_DIR / "odisseia.png"
+        nome_filme = "A Odisseia"
+    elif numero_sala == 2:
+        filme_img =  BASE_DIR / "homemaranha3.png"
+        nome_filme = "Homem Aranha 3"
+    elif numero_sala == 3:
+        filme_img =  BASE_DIR / "barbie.png"
+        nome_filme = "Barbie Em Vida de Sereia"
+
+    img_pil = Image.open(filme_img)
+    filme_img = ctk.CTkImage(light_image=img_pil, dark_image=img_pil, size=(180, 260))
+
+    card = ctk.CTkButton(filme_frame, text="", image=filme_img, width=180, height=260, fg_color="#121212",bg_color="#121212", hover_color="#2b2b36")
+    card.pack()
+    nome = ctk.CTkLabel(filme_frame, text=nome_filme, fg_color="#121212",bg_color="#121212")
+    nome.pack()
 
     rodape = ctk.CTkFrame(main_frame, fg_color="transparent")
     rodape.pack(fill="x", pady=(10, 0))
